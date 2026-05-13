@@ -3,7 +3,7 @@ title: 'Breathe CLI — Specification'
 subtitle: 'A paced-breathing terminal app for HFrEF vagal training'
 author: 'Marek Kowalczyk (spec by Claude, for Claude Opus 4.6)'
 date: 2026-04-20
-version: 1.1
+version: 1.2
 target_platform: 'macOS 10.14.6 (Mojave)'
 target_runtime: 'Python 3.7+ stdlib only'
 status: 'ready to implement'
@@ -97,7 +97,7 @@ without having "missed" any breaths.
 ### 5.1 Invocation
 
 ```console
-$ breathe                         # default: 10 min, 5-5 ratio
+$ breathe                         # auto-selects preset by time of day
 $ breathe --preset morning        # named preset
 $ breathe -d 20 -r 4-6            # custom
 $ breathe --safety                # show safety info and exit
@@ -182,9 +182,27 @@ If an unhandled exception ended it, the wrapper prints the traceback
 
 ### 6.1 `breathe` (no args)
 
-Behaviour equivalent to `breathe --preset morning`. Rationale: the
-morning preset is the foundational daily dose; making it the
-zero-argument default removes one step from the habit loop.
+Auto-selects a preset based on the system clock at invocation:
+
+| System time    | Auto-selected preset | Rationale |
+|----------------|----------------------|-----------|
+| 00:00 – 11:59  | `morning` (5-5, 10 min) | Equal ratio, moderate dose — energizing start |
+| 12:00 – 16:59  | `long` (4-6, 20 min)    | Vagal emphasis, full Bernardi dose — afternoon recovery window |
+| 17:00 – 23:59  | `evening` (4-6, 15 min) | Vagal emphasis, shorter — sympathetic wind-down before sleep |
+
+Time is read from `time.localtime().tm_hour`. No timezone
+configuration — uses whatever the OS reports.
+
+`--preset NAME` or custom flags (`-d`, `-r`) override auto-selection.
+Auto-selection only applies when no arguments are given.
+
+When auto-selected, the header shows the preset name as usual
+(e.g. `morning · 5-5 · ...`). No additional "auto" indicator is
+needed — the user invoked with no args and knows why.
+
+Rationale: the right breathing pattern depends on time of day. Making
+the zero-argument default context-aware removes one more step from the
+habit loop.
 
 ### 6.2 `breathe --preset NAME`
 
@@ -343,19 +361,26 @@ This must run on `Ctrl+C`, normal completion, and any exception.
 
 ### 8.1 Mechanism
 
-Use `subprocess.Popen` to invoke `/usr/bin/afplay` — Mojave's built-in
-audio player. No additional install needed.
+The primary audio backend is `AudioServicesPlaySystemSound` from the
+AudioToolbox C framework, called via `ctypes` (stdlib). At startup,
+both sound files are registered with `AudioServicesCreateSystemSoundID`.
+Playback is a single C function call with near-zero latency — no
+NSRunLoop needed, no subprocess spawn.
 
 ```python
-subprocess.Popen(
-    ['/usr/bin/afplay', '-v', '0.3', sound_path],
-    stdout=subprocess.DEVNULL,
-    stderr=subprocess.DEVNULL,
-)
+# Simplified — see _SystemSoundPlayer in breathe.py for full ctypes setup
+sound_id = register_sound(path)                    # once at startup
+AudioServicesPlaySystemSound(sound_id)             # per transition, ~0 ms
 ```
 
-Do not wait on the subprocess — fire and forget. Sound playback must
-never block the render loop.
+Sound playback is asynchronous and must never block the render loop.
+
+**Why not NSSound?** `NSSound.play()` dispatches through the
+`NSRunLoop`, which is never serviced in a CLI app. Sounds either
+don't play at all, or play with unpredictable latency.
+
+**Why not afplay?** `subprocess.Popen` incurs ~100–200 ms of
+process-spawn latency per sound, causing audible desync.
 
 ### 8.2 Sound files
 
@@ -366,17 +391,26 @@ Use macOS built-in system sounds in `/System/Library/Sounds/`:
 | Start of inhale  | `Tink.aiff` | Short, crisp, upward-perceived |
 | Start of exhale  | `Pop.aiff`  | Short, softer, downward-perceived |
 
-Volume: `-v 0.3` (30 %). These sounds are otherwise UI alerts and are
-too loud at full volume for a calming app. Volume is not configurable
-in v1.
+Volume follows the system alert volume setting (System Preferences >
+Sound > Alert volume). `AudioServicesPlaySystemSound` does not support
+per-sound volume control. This is an acceptable tradeoff for the
+latency gain; the user sets their alert volume once.
 
-### 8.3 Fallback
+### 8.3 Fallback chain
 
-If `/usr/bin/afplay` is missing, or either sound file is missing, the
-app prints a single warning at startup (`audio unavailable: falling
-back to terminal bell`) and uses `\a` (ASCII BEL, `\x07`) at phase
-transitions instead. If the terminal bell is also disabled, audio
-silently degrades to none. The session runs normally in all cases.
+The audio subsystem tries backends in order:
+
+1. **AudioToolbox** (`AudioServicesPlaySystemSound` via ctypes) —
+   near-zero latency, no run loop dependency, pre-registered sound IDs.
+   Used on all standard macOS installs.
+2. **afplay** (`subprocess.Popen`) — higher latency (~100–200 ms per
+   sound due to process spawn), but still functional. Used if the
+   AudioToolbox ctypes setup fails for any reason.
+3. **Terminal bell** (`\a` / `\x07`) — used if `afplay` is missing or
+   sound files are absent. A single warning is printed at startup
+   (`audio unavailable: falling back to terminal bell`).
+4. **Silent** — if the terminal bell is also disabled, audio degrades
+   to none. The session runs normally in all cases.
 
 ### 8.4 Muting
 
@@ -433,24 +467,28 @@ run_session(config):
         clear screen, draw static header
         do 3-second countdown
         mark session_start = time.monotonic()
+        next_boundary = session_start   # ideal wall-clock phase edge
         total_paused = 0
         while elapsed_breathing < config.duration_seconds:
             for phase in (INHALE, EXHALE):
-                play sound for phase
-                phase_start = time.monotonic()
                 phase_duration = config.inhale_s if INHALE else config.exhale_s
-                while time.monotonic() - phase_start < phase_duration:
+                phase_end = next_boundary + phase_duration
+                play sound for phase
+                while time.monotonic() < phase_end:
                     key = poll_key()  # non-blocking
                     handle key (pause / mute / quit)
                     if paused:
                         pause_start = time.monotonic()
                         wait on key, then resume
-                        total_paused += time.monotonic() - pause_start
-                        phase_start += pause_duration  # shift phase window
+                        pause_dur = time.monotonic() - pause_start
+                        total_paused += pause_dur
+                        next_boundary += pause_dur  # shift ideal edge
+                        phase_end    += pause_dur
                     if quit: raise SessionAborted
-                    compute progress (0..1) within phase
+                    progress = (now - next_boundary) / phase_duration
                     render_frame(state, phase, progress)
                     sleep 50 ms
+                next_boundary = phase_end  # advance to ideal edge
                 # phase complete — count only after EXHALE (= one full cycle)
                 if phase is EXHALE:
                     increment breath counter
@@ -460,6 +498,14 @@ run_session(config):
         restore terminal
     return state
 ```
+
+**Timing model.** Phase boundaries are computed from ideal offsets
+anchored to `session_start`, not from `time.monotonic()` at the moment
+the previous phase finishes. Each frame's `time.sleep(50 ms)` overshoots
+by 1–3 ms due to work before and after the sleep; without anchored
+boundaries this accumulates to seconds of audible drift over a full
+session. The `next_boundary` variable eliminates drift by advancing by
+the exact phase duration at each transition.
 
 ### 9.4 Key handling detail
 
@@ -515,7 +561,7 @@ Commit these values directly into the source file. Do not invent a
 config-file layer.
 
 ```python
-VERSION = '1.1'
+VERSION = '1.2'
 
 PRESETS = {
     'morning': {'duration_min': 10, 'inhale_s': 5, 'exhale_s': 5},
@@ -552,7 +598,7 @@ manually; no test framework required.
 ### 13.1 Smoke tests
 
 1. `breathe --help` prints help and exits 0.
-2. `breathe --version` prints `breathe 1.1` and exits 0.
+2. `breathe --version` prints `breathe 1.2` and exits 0.
 3. `breathe --safety` prints the safety block and exits 0.
 4. `breathe --list-presets` prints the preset table and exits 0.
 5. `breathe -d 1` runs for ~60 seconds, renders breath animation, exits cleanly with `completed` status.
@@ -581,6 +627,13 @@ manually; no test framework required.
 ### 13.5 Terminal-restoration test
 
 18. Inject a deliberate `raise RuntimeError('boom')` inside the render loop. Run the app. Confirm: summary prints, then traceback, then prompt returns on its own line with cursor visible and no lingering colour codes.
+
+### 13.6 Time-of-day default test
+
+19. Run `breathe` with no arguments at different times of day (or mock `time.localtime`). Verify:
+    - Before noon: header shows `morning · 5-5 · ... / 10:00`
+    - 12:00–16:59: header shows `long · 4-6 · ... / 20:00`
+    - 17:00+: header shows `evening · 4-6 · ... / 15:00`
 
 ## 14. Build and run
 

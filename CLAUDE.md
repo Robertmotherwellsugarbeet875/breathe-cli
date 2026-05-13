@@ -4,7 +4,7 @@ Single-file Python 3 CLI app (`breathe.py`) that paces resonance breathing for H
 
 ## Spec
 
-The full specification is `breathe-cli-spec.md` (v1.1). Read it before implementing anything. It is the single source of truth.
+The full specification is `breathe-cli-spec.md` (v1.2). Read it before implementing anything. It is the single source of truth.
 
 ## Key constraints
 
@@ -37,7 +37,7 @@ Do not add breathing patterns, retention phases, or cycle speeds not listed in t
 
 ## Testing
 
-No test framework. The spec (section 13) defines 18 manual acceptance tests. Run them in order. Pay special attention to:
+No test framework. The spec (section 13) defines 19 manual acceptance tests. Run them in order. Pay special attention to:
 
 - **Test 18** (terminal restoration on exception) — this validates the most critical code path.
 - **Test 15** (pause excludes time from elapsed clock) — paused time must not count toward duration or completion %.
