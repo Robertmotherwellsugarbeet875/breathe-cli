@@ -38,3 +38,31 @@ the layout row calculations.
 Change `INHALE` / `EXHALE` to `IN` / `OUT`. Quieter, less clinical,
 matches the minimal aesthetic. Verify the horizontal centering still
 looks right with the shorter strings.
+
+## Bugs
+
+### 6. Sound cues play in wrong location
+Sound cues are triggering but seem misattributed or misplaced.
+Needs investigation and fix.
+
+## Enhancements
+
+### 7. Replace count-up timer with countdown
+In the header's upper-left, replace the elapsed count-up display
+(`05:58 / 20:00`) with a simple countdown showing remaining time
+(e.g. `19:25`). More useful at a glance — the user cares about
+how much is left, not how much has passed.
+
+### 8. Session progress bar (cycle count)
+Add a second horizontal bar below the breath bar that tracks
+cycle-count progress (completed cycles / total expected cycles).
+Same width as the breath bar, identical visual style, but fills
+gradually based on breath count rather than phase. Separate the
+two bars with ~5 px (blank lines or spacing) so they're close
+but visually distinct. Requires adjusting layout row calculations.
+Note: this is related to but distinct from enhancement #4 (which
+tracks elapsed time); this one tracks completed breath cycles.
+
+### ~~9. Session logging to disk~~ DONE (v1.3)
+Append-only CSV at `~/.breathe_log.csv`. Spec §5.7. Flags:
+`--log` (show path), `--no-log` (suppress for one session).

@@ -3,7 +3,7 @@ title: 'Breathe CLI — Specification'
 subtitle: 'A paced-breathing terminal app for HFrEF vagal training'
 author: 'Marek Kowalczyk (spec by Claude, for Claude Opus 4.6)'
 date: 2026-04-20
-version: 1.2
+version: 1.3
 target_platform: 'macOS 10.14.6 (Mojave)'
 target_runtime: 'Python 3.7+ stdlib only'
 status: 'ready to implement'
@@ -45,11 +45,11 @@ must make the right thing (a 6-bpm daily session) the easiest thing.
 - Three named presets plus custom flags
 - Pause / resume / quit controls during a session
 - Session summary on exit (completed breaths, elapsed time, completion %)
+- Session logging to disk (append-only CSV)
 - Safety information screen
 
 ### Out of scope (v1)
 
-- Session logging to disk
 - HRV measurement or integration
 - Multi-user profiles
 - Non-resonance breathing patterns (4-7-8, box, Wim Hof, etc.) — **deliberately excluded on safety grounds; see §5.4**
@@ -103,6 +103,8 @@ $ breathe -d 20 -r 4-6            # custom
 $ breathe --safety                # show safety info and exit
 $ breathe --list-presets          # show presets and exit
 $ breathe --quiet -d 5            # suppress startup warnings
+$ breathe --log                   # show log file path
+$ breathe --no-log -d 5           # run without logging
 $ breathe --help                  # standard argparse help
 ```
 
@@ -177,6 +179,56 @@ If the session completed naturally, the `Status` line reads `completed`.
 If `Ctrl+C` was pressed or `q` was pressed, it reads `ended early (user)`.
 If an unhandled exception ended it, the wrapper prints the traceback
 *after* the summary.
+
+### 5.7 Session logging
+
+After printing the exit summary, append one line to a CSV log file.
+This provides a lightweight habit-tracking record without requiring
+external tools or databases.
+
+#### Log file location
+
+`~/.breathe_log.csv` (expands via `os.path.expanduser`). The file is
+created on first use with a header row. Subsequent sessions append.
+
+#### CSV format
+
+```csv
+date,time,preset,ratio,duration_target_s,duration_actual_s,breaths,completion_pct,status
+2026-05-15,08:32:14,morning,5-5,600,462,46,77,ended early (user)
+2026-05-15,19:05:00,evening,4-6,900,900,90,100,completed
+```
+
+Fields:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `date` | `YYYY-MM-DD` | Session start date (local time) |
+| `time` | `HH:MM:SS` | Session start time (local time) |
+| `preset` | string | Preset name or `custom` |
+| `ratio` | string | e.g. `5-5`, `4-6` |
+| `duration_target_s` | int | Target duration in seconds |
+| `duration_actual_s` | int | Actual breathing time in seconds (paused time excluded) |
+| `breaths` | int | Full breath cycles completed |
+| `completion_pct` | int | 0–100 |
+| `status` | string | `completed` or `ended early (user)` |
+
+#### Behaviour
+
+- The log is written in `main()` after `print_summary()`, not inside
+  `run_session()`. If terminal restoration fails, the log still writes.
+- If the log file cannot be written (permissions, disk full), print a
+  one-line warning to stderr and continue — never fail the session
+  because of logging.
+- The `--no-log` flag suppresses logging for a single session.
+- `breathe --log` prints the log file path and exits 0. If the file
+  does not exist, prints the path with "(no sessions logged yet)".
+- The header row is written only when creating a new file (check with
+  `os.path.isfile` before opening in append mode).
+- Timestamps use `time.localtime()` and `time.strftime`.
+- No log rotation, no pruning. At ~80 bytes/line, 365 sessions/year =
+  ~29 KB/year. The file is trivially `grep`-able and importable into
+  any spreadsheet.
 
 ## 6. Command-line interface
 
@@ -256,7 +308,18 @@ options block showing `breathe --preset morning`.
 
 ### 6.7 `breathe --version`
 
-Prints `breathe 1.0` and exits 0.
+Prints `breathe 1.3` and exits 0.
+
+### 6.8 `breathe --log`
+
+Prints the log file path. If the file exists, prints the path. If not,
+prints the path followed by "(no sessions logged yet)". Exits 0.
+
+### 6.9 `breathe --no-log`
+
+Suppresses session logging for this invocation. The session runs
+normally and prints the exit summary, but no line is appended to the
+log file.
 
 ## 7. Visual design
 
@@ -454,9 +517,10 @@ Top-to-bottom:
 7. Rendering functions: `clear_screen`, `draw_header`, `draw_phase`, `draw_bar`, `draw_footer`, `render_frame`
 8. Input handling: `setup_raw_tty`, `restore_tty`, `poll_key`
 9. Core loop: `run_session(config)` → `SessionState`
-10. CLI handlers: `print_safety`, `print_presets`, `parse_ratio`, `build_config`
-11. `main()` with argparse wiring
-12. `if __name__ == '__main__': main()`
+10. Logging: `log_session`
+11. CLI handlers: `print_safety`, `print_presets`, `parse_ratio`, `build_config`
+12. `main()` with argparse wiring
+13. `if __name__ == '__main__': main()`
 
 ### 9.3 Core loop pseudocode
 
@@ -561,7 +625,10 @@ Commit these values directly into the source file. Do not invent a
 config-file layer.
 
 ```python
-VERSION = '1.2'
+VERSION = '1.3'
+
+LOG_FILE = '~/.breathe_log.csv'
+LOG_HEADER = 'date,time,preset,ratio,duration_target_s,duration_actual_s,breaths,completion_pct,status'
 
 PRESETS = {
     'morning': {'duration_min': 10, 'inhale_s': 5, 'exhale_s': 5},
@@ -598,7 +665,7 @@ manually; no test framework required.
 ### 13.1 Smoke tests
 
 1. `breathe --help` prints help and exits 0.
-2. `breathe --version` prints `breathe 1.2` and exits 0.
+2. `breathe --version` prints `breathe 1.3` and exits 0.
 3. `breathe --safety` prints the safety block and exits 0.
 4. `breathe --list-presets` prints the preset table and exits 0.
 5. `breathe -d 1` runs for ~60 seconds, renders breath animation, exits cleanly with `completed` status.
@@ -635,6 +702,15 @@ manually; no test framework required.
     - 12:00–16:59: header shows `long · 4-6 · ... / 20:00`
     - 17:00+: header shows `evening · 4-6 · ... / 15:00`
 
+### 13.7 Session logging tests
+
+20. `breathe -d 1` completes. Check `~/.breathe_log.csv` exists, has a header row and one data row with correct fields. `completion_pct` is `100`, `status` is `completed`.
+21. `breathe -d 1`, then `Ctrl+C` after ~10 seconds. Log has a new row with `status` = `ended early (user)` and `completion_pct` < 100.
+22. `breathe --no-log -d 1` completes. Log file row count has not increased.
+23. `breathe --log` prints the log file path and exits 0.
+24. Delete `~/.breathe_log.csv`, run `breathe --log`: prints path with "(no sessions logged yet)".
+25. `chmod 000 ~/.breathe_log.csv`, run `breathe -d 1`: session completes normally, stderr shows a one-line warning about logging failure. Restore permissions afterwards.
+
 ## 14. Build and run
 
 ### 14.1 Install
@@ -656,9 +732,11 @@ breathe --preset morning
 
 ```bash
 rm ~/bin/breathe
+rm -f ~/.breathe_log.csv   # optional: remove session log
 ```
 
-No dotfiles, no caches, no state. That is the point.
+One dotfile (`~/.breathe_log.csv`) stores session history. It is
+plain-text CSV, human-readable, and safe to delete at any time.
 
 ## 15. Implementation notes for Claude Opus 4.6
 

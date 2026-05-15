@@ -3,7 +3,6 @@
 
 import argparse
 import ctypes
-import ctypes.util
 import os
 import select
 import signal
@@ -14,11 +13,10 @@ import termios
 import time
 import tty
 from dataclasses import dataclass
-from typing import Optional
 
 # ── Constants ────────────────────────────────────────────────────────
 
-VERSION = '1.2'
+VERSION = '1.3'
 
 PRESETS = {
     'morning': {'duration_min': 10, 'inhale_s': 5, 'exhale_s': 5},
@@ -26,16 +24,16 @@ PRESETS = {
     'long':    {'duration_min': 20, 'inhale_s': 4, 'exhale_s': 6},
 }
 
-PRESET_DESCRIPTIONS = {
-    'morning': 'Daily baseline',
-    'evening': 'Sympathetic wind-down',
-    'long':    'Full dose, Bernardi protocol',
-}
+PRESET_DESCRIPTIONS = {'morning': 'Daily baseline', 'evening': 'Sympathetic wind-down',
+                       'long': 'Full dose, Bernardi protocol'}
 
 SOUND_INHALE = '/System/Library/Sounds/Tink.aiff'
 SOUND_EXHALE = '/System/Library/Sounds/Pop.aiff'
 AFPLAY       = '/usr/bin/afplay'
 AFPLAY_VOL   = '0.3'
+
+LOG_FILE   = os.path.expanduser('~/.breathe_log.csv')
+LOG_HEADER = 'date,time,preset,ratio,duration_target_s,duration_actual_s,breaths,completion_pct,status'
 
 BAR_WIDTH      = 30
 FRAME_RATE_HZ  = 20
@@ -53,8 +51,7 @@ ANSI_CYAN     = '\033[36m'
 ANSI_GREEN    = '\033[32m'
 ANSI_CLR_LINE = '\033[K'
 
-INHALE = 'INHALE'
-EXHALE = 'EXHALE'
+INHALE, EXHALE = 'INHALE', 'EXHALE'
 
 SAFETY_TEXT = """\
 Breathe CLI \u2014 safety notes
@@ -92,14 +89,12 @@ class Config:
     def ratio_str(self):
         return '{}-{}'.format(self.inhale_s, self.exhale_s)
 
-
 @dataclass
 class Result:
     breaths: int = 0
     elapsed: float = 0.0
     completed: bool = False
     aborted: bool = False
-
 
 @dataclass
 class Layout:
@@ -118,23 +113,19 @@ def supports_colour():
         return False
     return sys.stdout.isatty()
 
-
 def supports_unicode():
     enc = getattr(sys.stdout, 'encoding', '') or ''
     return 'utf' in enc.lower()
 
-
 def format_mmss(seconds):
     m, s = divmod(int(seconds), 60)
     return '{:02d}:{:02d}'.format(m, s)
-
 
 def format_human(seconds):
     m, s = divmod(int(seconds), 60)
     if m > 0:
         return '{} min {} s'.format(m, s)
     return '{} s'.format(s)
-
 
 def compute_layout():
     size = shutil.get_terminal_size((80, 24))
@@ -152,29 +143,22 @@ def compute_layout():
         use_unicode=supports_unicode(),
     )
 
-
 class _SystemSoundPlayer:
-    """Low-latency audio via AudioServicesPlaySystemSound (AudioToolbox).
-
-    Pure C API — no NSRunLoop needed, so it works reliably from a CLI.
-    Sounds are registered once at init; play() is a single C call.
-    Volume follows System Preferences > Sound > Alert volume."""
+    """AudioToolbox ctypes player — near-zero latency, no NSRunLoop."""
 
     def __init__(self):
         self._at = ctypes.cdll.LoadLibrary(
             '/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox')
         self._cf = ctypes.cdll.LoadLibrary(
             '/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation')
-        self._cf.CFStringCreateWithCString.restype = ctypes.c_void_p
-        self._cf.CFStringCreateWithCString.argtypes = [
-            ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32]
-        self._cf.CFURLCreateWithFileSystemPath.restype = ctypes.c_void_p
-        self._cf.CFURLCreateWithFileSystemPath.argtypes = [
-            ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int32, ctypes.c_bool]
-        self._at.AudioServicesCreateSystemSoundID.argtypes = [
-            ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32)]
+        vp, cp, u32 = ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32
+        self._cf.CFStringCreateWithCString.restype = vp
+        self._cf.CFStringCreateWithCString.argtypes = [vp, cp, u32]
+        self._cf.CFURLCreateWithFileSystemPath.restype = vp
+        self._cf.CFURLCreateWithFileSystemPath.argtypes = [vp, vp, ctypes.c_int32, ctypes.c_bool]
+        self._at.AudioServicesCreateSystemSoundID.argtypes = [vp, ctypes.POINTER(u32)]
         self._at.AudioServicesCreateSystemSoundID.restype = ctypes.c_int32
-        self._at.AudioServicesPlaySystemSound.argtypes = [ctypes.c_uint32]
+        self._at.AudioServicesPlaySystemSound.argtypes = [u32]
         self._at.AudioServicesPlaySystemSound.restype = None
         self._ids = {}
         for phase, path in [(INHALE, SOUND_INHALE), (EXHALE, SOUND_EXHALE)]:
@@ -207,7 +191,6 @@ class _SystemSoundPlayer:
         if sid is not None:
             self._at.AudioServicesPlaySystemSound(sid)
 
-
 _sys_sound_player = None  # set by check_audio()
 
 def check_audio(quiet):
@@ -225,7 +208,6 @@ def check_audio(quiet):
     if not quiet:
         sys.stderr.write('audio unavailable: falling back to terminal bell\n')
     return 'bell'
-
 
 def play_sound(phase, audio_mode):
     if audio_mode == 'system':
@@ -254,14 +236,12 @@ def setup_raw_tty():
     except termios.error:
         return None
 
-
 def restore_tty(old_settings):
     if old_settings is not None:
         try:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
         except termios.error:
             pass
-
 
 def poll_key():
     if not sys.stdin.isatty():
@@ -276,7 +256,6 @@ def poll_key():
 
 def move_to(row, col):
     sys.stdout.write('\033[{};{}H'.format(row, col))
-
 
 def draw_header(layout, config, elapsed, paused, muted):
     move_to(layout.header_row, 1)
@@ -296,7 +275,6 @@ def draw_header(layout, config, elapsed, paused, muted):
     )
     sys.stdout.write(line)
 
-
 def draw_phase(layout, phase):
     move_to(layout.phase_row, 1)
     sys.stdout.write(ANSI_CLR_LINE)
@@ -310,7 +288,6 @@ def draw_phase(layout, phase):
     else:
         pad = (layout.width - len(phase)) // 2
         sys.stdout.write(' ' * pad + styled)
-
 
 def draw_bar(layout, progress, phase):
     move_to(layout.bar_row, 1)
@@ -331,7 +308,6 @@ def draw_bar(layout, progress, phase):
         pad = (layout.width - BAR_WIDTH) // 2
         sys.stdout.write(' ' * pad + bar)
 
-
 def draw_footer(layout, paused):
     move_to(layout.footer_row, 1)
     sys.stdout.write(ANSI_CLR_LINE)
@@ -343,7 +319,6 @@ def draw_footer(layout, paused):
         text = ANSI_DIM + text + ANSI_RESET
     sys.stdout.write('  ' + text)
 
-
 def render_frame(layout, config, elapsed, phase, progress, paused, muted):
     draw_header(layout, config, elapsed, paused, muted)
     draw_phase(layout, phase)
@@ -353,10 +328,8 @@ def render_frame(layout, config, elapsed, phase, progress, paused, muted):
 
 _abort = [False]
 
-
 def _sigint_handler(signum, frame):
     _abort[0] = True
-
 
 def run_countdown(layout, config):
     """Run the 3-second settle countdown. Returns False if aborted."""
@@ -383,7 +356,6 @@ def run_countdown(layout, config):
                 return False
             time.sleep(FRAME_SLEEP)
     return True
-
 
 def run_session(config, result):
     is_tty = sys.stdout.isatty() and sys.stdin.isatty()
@@ -546,9 +518,38 @@ def print_summary(config, result):
     print('Breaths:   {} full cycles'.format(result.breaths))
     print('Status:    {}'.format(status))
 
+def log_session(config, result, session_start_time):
+    """Append one CSV row to ~/.breathe_log.csv. Never raises."""
+    try:
+        write_header = not os.path.isfile(LOG_FILE)
+        with open(LOG_FILE, 'a') as f:
+            if write_header:
+                f.write(LOG_HEADER + '\n')
+            pct = min(100, int(result.elapsed / config.duration_s * 100)) if config.duration_s > 0 else 100
+            status = 'completed' if result.completed else 'ended early (user)'
+            row = '{},{},{},{},{},{},{},{},{}'.format(
+                time.strftime('%Y-%m-%d', session_start_time),
+                time.strftime('%H:%M:%S', session_start_time),
+                config.preset_name,
+                config.ratio_str,
+                config.duration_s,
+                int(result.elapsed),
+                result.breaths,
+                pct,
+                status,
+            )
+            f.write(row + '\n')
+    except OSError as e:
+        sys.stderr.write('Warning: could not write session log: {}\n'.format(e))
+
+def print_log_path():
+    if os.path.isfile(LOG_FILE):
+        print(LOG_FILE)
+    else:
+        print('{} (no sessions logged yet)'.format(LOG_FILE))
+
 def print_safety():
     print(SAFETY_TEXT)
-
 
 def print_presets():
     print('Available presets:\n')
@@ -561,36 +562,29 @@ def print_presets():
         print(fmt.format(name, '{} min'.format(p['duration_min']),
                          ratio, PRESET_DESCRIPTIONS[name]))
 
+def _die(msg):
+    sys.stderr.write('Error: ' + msg + '\n')
+    sys.exit(1)
 
 def parse_ratio(ratio_str):
+    _fmt_err = 'Ratio must be in the form `inhale-exhale` (e.g. `5-5` or `4-6`).'
     parts = ratio_str.split('-')
     if len(parts) > 2:
-        sys.stderr.write('Error: Three-number ratios imply a breath hold. '
-                         'This app does not support breath retention. '
-                         'See `breathe --safety`.\n')
-        sys.exit(1)
+        _die('Three-number ratios imply a breath hold. '
+             'This app does not support breath retention. See `breathe --safety`.')
     if len(parts) != 2:
-        sys.stderr.write('Error: Ratio must be in the form `inhale-exhale` '
-                         '(e.g. `5-5` or `4-6`).\n')
-        sys.exit(1)
+        _die(_fmt_err)
     try:
         inhale, exhale = int(parts[0]), int(parts[1])
     except ValueError:
-        sys.stderr.write('Error: Ratio must be in the form `inhale-exhale` '
-                         '(e.g. `5-5` or `4-6`).\n')
-        sys.exit(1)
+        _die(_fmt_err)
     if inhale + exhale < MIN_CYCLE_SECS:
-        sys.stderr.write('Error: Total breath cycle must be \u2265 8 seconds '
-                         '(no rapid breathing).\n')
-        sys.exit(1)
+        _die('Total breath cycle must be \u2265 8 seconds (no rapid breathing).')
     if not (3 <= inhale <= 10):
-        sys.stderr.write('Error: Inhale must be 3\u201310 seconds.\n')
-        sys.exit(1)
+        _die('Inhale must be 3\u201310 seconds.')
     if not (3 <= exhale <= 10):
-        sys.stderr.write('Error: Exhale must be 3\u201310 seconds.\n')
-        sys.exit(1)
+        _die('Exhale must be 3\u201310 seconds.')
     return inhale, exhale
-
 
 def build_parser():
     parser = argparse.ArgumentParser(
@@ -614,8 +608,11 @@ def build_parser():
                         help='Disable audio cues')
     parser.add_argument('--quiet', '-q', action='store_true',
                         help='Suppress startup warnings')
+    parser.add_argument('--log', action='store_true',
+                        help='Show log file path and exit')
+    parser.add_argument('--no-log', action='store_true',
+                        help='Suppress session logging for this run')
     return parser
-
 
 def main():
     if sys.version_info < (3, 7):
@@ -629,6 +626,10 @@ def main():
         print_safety()
         sys.exit(0)
 
+    if args.log:
+        print_log_path()
+        sys.exit(0)
+
     if args.list_presets:
         print_presets()
         sys.exit(0)
@@ -636,9 +637,7 @@ def main():
     # Build config from args
     if args.preset:
         if args.duration is not None or args.ratio is not None:
-            sys.stderr.write('Error: --preset cannot be combined with '
-                             '--duration or --ratio.\n')
-            sys.exit(1)
+            _die('--preset cannot be combined with --duration or --ratio.')
         p = PRESETS[args.preset]
         inhale_s, exhale_s = p['inhale_s'], p['exhale_s']
         duration_min = p['duration_min']
@@ -665,8 +664,7 @@ def main():
         duration_min = p['duration_min']
 
     if not (1 <= duration_min <= 60):
-        sys.stderr.write('Error: Duration must be 1\u201360 minutes.\n')
-        sys.exit(1)
+        _die('Duration must be 1\u201360 minutes.')
 
     config = Config(
         duration_s=duration_min * 60,
@@ -679,6 +677,7 @@ def main():
 
     result = Result()
     exc_info = None
+    session_start_time = time.localtime()
 
     try:
         run_session(config, result)
@@ -689,11 +688,13 @@ def main():
 
     print_summary(config, result)
 
+    if not args.no_log:
+        log_session(config, result, session_start_time)
+
     if exc_info is not None:
         import traceback
         traceback.print_exception(*exc_info)
         sys.exit(1)
-
 
 if __name__ == '__main__':
     main()
