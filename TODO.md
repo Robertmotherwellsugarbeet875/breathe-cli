@@ -1,23 +1,26 @@
 # Breathe CLI — Issues & Ideas
 
-## Bugs
+## Done
 
 ### ~~1. Audio cues drift out of sync with breath cycle~~ FIXED
 Phase boundaries now use ideal offsets anchored to `session_start`
 (`next_boundary` variable) instead of `time.monotonic()` at phase
 start. Eliminates cumulative sleep overshoot drift.
 
+### ~~2. Time-of-day-aware default preset~~ DONE (v1.2)
+Auto-selects preset by time of day when invoked with no arguments.
+
+### ~~9. Session logging to disk~~ DONE (v1.3)
+Append-only CSV at `~/.breathe_log.csv`. Spec §5.7. Flags:
+`--log` (show path), `--no-log` (suppress for one session).
+
+## Bugs
+
+### 6. Sound cues play in wrong location
+Sound cues are triggering but seem misattributed or misplaced.
+Needs investigation and fix.
+
 ## Enhancements
-
-### 2. Time-of-day-aware default preset
-Detect time of day from the system clock and default to a different
-preset instead of always using `morning`. For example:
-- Before noon → `morning` (10 min, 5-5)
-- Noon to 18:00 → `morning` (or a future `midday` preset)
-- After 18:00 → `evening` (15 min, 4-6)
-
-This keeps the zero-argument invocation frictionless while matching
-the session to the user's likely intent.
 
 ### 3. README.md
 Add a `README.md` with:
@@ -26,7 +29,7 @@ Add a `README.md` with:
   breathing at 6 bpm, vagal tone, HFrEF context, Bernardi protocol
   references
 
-### 4. Session progress bar
+### 4. Session progress bar (time-based)
 Add a second horizontal bar below the breath bar that shows overall
 session progress (elapsed / total duration). Same width as the breath
 bar. Needs careful design to avoid cluttering the minimal interface —
@@ -38,14 +41,6 @@ the layout row calculations.
 Change `INHALE` / `EXHALE` to `IN` / `OUT`. Quieter, less clinical,
 matches the minimal aesthetic. Verify the horizontal centering still
 looks right with the shorter strings.
-
-## Bugs
-
-### 6. Sound cues play in wrong location
-Sound cues are triggering but seem misattributed or misplaced.
-Needs investigation and fix.
-
-## Enhancements
 
 ### 7. Replace count-up timer with countdown
 In the header's upper-left, replace the elapsed count-up display
@@ -62,7 +57,3 @@ two bars with ~5 px (blank lines or spacing) so they're close
 but visually distinct. Requires adjusting layout row calculations.
 Note: this is related to but distinct from enhancement #4 (which
 tracks elapsed time); this one tracks completed breath cycles.
-
-### ~~9. Session logging to disk~~ DONE (v1.3)
-Append-only CSV at `~/.breathe_log.csv`. Spec §5.7. Flags:
-`--log` (show path), `--no-log` (suppress for one session).
