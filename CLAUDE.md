@@ -4,7 +4,7 @@ Single-file Python 3 CLI app (`breathe.py`) that paces resonance breathing for H
 
 ## Spec
 
-The full specification is `breathe-cli-spec.md` (v1.3). Read it before implementing anything. It is the single source of truth.
+The full specification is `breathe-cli-spec.md` (v1.5). Read it before implementing anything. It is the single source of truth.
 
 ## Key constraints
 
@@ -29,7 +29,7 @@ Do not add breathing patterns, retention phases, or cycle speeds not listed in t
 
 1. Write the `finally` block and terminal restoration first. Verify it works before anything else.
 2. Argument parsing and validation (presets, custom flags, safety rejections).
-3. Core render loop with ANSI escape codes.
+3. Core render loop — flat state machine (INHALE/EXHALE/PAUSED) with ANSI escape codes.
 4. Key handling (`select.select` + `cbreak`).
 5. Audio (`afplay` subprocess, fire-and-forget).
 6. Degradation paths (no TTY, no color, no unicode, no audio).
@@ -40,14 +40,14 @@ Do not add breathing patterns, retention phases, or cycle speeds not listed in t
 No test framework. The spec (section 13) defines 25 manual acceptance tests. Run them in order. Pay special attention to:
 
 - **Test 18** (terminal restoration on exception) — this validates the most critical code path.
-- **Test 15** (pause excludes time from elapsed clock) — paused time must not count toward duration or completion %.
+- **Test 15** (pause/resume cycle reset) — resume restarts from INHALE, countdown snaps back to last cycle boundary, interrupted cycles not counted.
 - **Tests 7-10** (safety rejections) — these must produce the exact error messages from spec section 5.4.
 
 ## Common pitfalls
 
 - Don't clear the whole screen each frame — it flickers on Terminal.app. Move cursor to each zone and rewrite.
 - Breath counter increments only after a full cycle (inhale + exhale), not after each phase.
-- Paused time is excluded from elapsed duration. Track `total_paused` separately and subtract.
+- Elapsed time tracks completed breathing only (`breaths * cycle_s`). The state machine has no `total_paused` — pause simply stops the loop, resume resets the cycle.
 - The `-q` short flag (quiet mode) does not conflict with the `q` runtime key — one is argv, the other is stdin during a session.
 - `afplay` subprocess must never block the render loop. Use `Popen`, not `run`.
 

@@ -30,3 +30,18 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 
 **What we'll do differently:**
 - Nothing process-wise — this session was clean. The line cap issue is a known constraint already tracked in TODO and prior AAR
+
+## 2026-05-26 — State machine refactor, pause-resume reset (v1.5)
+
+**What went well:**
+- Visual testing workflow — asking user to run and inspect the TUI was far more effective than scripting pty captures, which wasted time and tokens
+- The state machine refactor landed clean: net -5 lines, simpler mental model, and the pause-resume behavior works correctly
+- Iterative design through conversation: the elapsed time model evolved through three rounds of feedback (wall-clock minus pauses → completed breathing time → smooth countdown with snap-back) and each round sharpened the design
+
+**What didn't go well:**
+- First attempt at pause-resume (flag-based break out of nested loops) caused a 4-second overshoot bug and had to be fully reverted — should have recognized the nested loop structure was the root problem earlier instead of trying to patch it
+- Spent significant tokens on programmatic pty capture that produced no useful output — the app needs a real terminal
+
+**What we'll do differently:**
+- For TUI changes, always ask the user to run and visually verify — never attempt programmatic terminal capture (already saved to memory)
+- When a feature requires breaking out of multiple loop levels with flags, treat that as a design smell and consider restructuring first

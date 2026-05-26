@@ -51,6 +51,12 @@ looks right with the shorter strings.
 ### ~~7. Replace count-up timer with countdown~~ DONE (v1.4)
 Header now shows remaining time counting down instead of elapsed/total.
 
+### ~~11. State machine refactor and pause-resume reset~~ DONE (v1.5)
+Replaced triple-nested render loop with flat state machine
+(INHALE/EXHALE/PAUSED). Resume from pause restarts cycle from INHALE.
+Countdown tracks completed breathing time only. Pause indicator
+changed from ⏸ to ‖ (U+2016) to fix bracket shift.
+
 ### 8. Session progress bar (cycle count)
 Add a second horizontal bar below the breath bar that tracks
 cycle-count progress (completed cycles / total expected cycles).
