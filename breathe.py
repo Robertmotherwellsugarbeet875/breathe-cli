@@ -51,7 +51,7 @@ ANSI_CYAN     = '\033[36m'
 ANSI_GREEN    = '\033[32m'
 ANSI_CLR_LINE = '\033[K'
 
-INHALE, EXHALE = 'INHALE', 'EXHALE'
+INHALE, EXHALE, PAUSED = 'INHALE', 'EXHALE', 'PAUSED'
 
 SAFETY_TEXT = """\
 Breathe CLI \u2014 safety notes
@@ -262,7 +262,7 @@ def draw_header(layout, config, elapsed, paused, muted):
     sys.stdout.write(ANSI_CLR_LINE)
     parts = []
     if paused:
-        parts.append('\u23f8' if layout.use_unicode else 'P')
+        parts.append('\u2016' if layout.use_unicode else 'P')
     if muted:
         parts.append('\U0001f507' if layout.use_unicode else 'M')
     if not parts:
@@ -385,7 +385,6 @@ def run_session(config, result):
     _abort[0] = False
 
     muted = not config.sound_enabled
-    total_paused = 0.0
 
     try:
         sys.stdout.write(ANSI_HIDE_CUR)
@@ -396,101 +395,97 @@ def run_session(config, result):
             result.aborted = True
             return
 
-        session_start = time.monotonic()
-        next_boundary = session_start  # ideal wall-clock phase edge
+        cycle_s = config.inhale_s + config.exhale_s
+        state = INHALE
+        phase_start_wall = time.monotonic()
+        breathing_base = 0.0
+
+        if not muted and audio_mode != 'none':
+            play_sound(INHALE, audio_mode)
 
         while True:
-            elapsed = time.monotonic() - session_start - total_paused
-            if elapsed >= config.duration_s:
-                result.completed = True
-                break
+            now = time.monotonic()
+
+            # ── PAUSED ──────────────────────────────────────
+            if state == PAUSED:
+                if _abort[0]:
+                    result.aborted = True
+                    break
+                key = poll_key()
+                if key == 'q':
+                    result.aborted = True
+                    break
+                elif key == ' ':
+                    if breathing_base >= config.duration_s:
+                        result.completed = True
+                        break
+                    state = INHALE
+                    phase_start_wall = time.monotonic()
+                    if not muted and audio_mode != 'none':
+                        play_sound(INHALE, audio_mode)
+                elif key == 's':
+                    muted = not muted
+                render_frame(layout, config, breathing_base, paused_phase,
+                             paused_progress, True, muted)
+                time.sleep(FRAME_SLEEP)
+                continue
+
+            # ── INHALE / EXHALE ─────────────────────────────
             if _abort[0]:
                 result.aborted = True
                 break
 
-            for phase in (INHALE, EXHALE):
-                phase_dur = config.inhale_s if phase == INHALE else config.exhale_s
-                phase_end = next_boundary + phase_dur
+            phase_dur = (config.inhale_s if state == INHALE
+                         else config.exhale_s)
+            phase_elapsed = now - phase_start_wall
+            progress = phase_elapsed / phase_dur
 
-                if not muted and audio_mode != 'none':
-                    play_sound(phase, audio_mode)
-
-                while True:
-                    now = time.monotonic()
-                    phase_elapsed = now - next_boundary
-                    if now >= phase_end:
-                        break
-
-                    if _abort[0]:
-                        result.aborted = True
-                        result.elapsed = now - session_start - total_paused
-                        return
-
-                    key = poll_key()
-                    if key == 'q':
-                        result.aborted = True
-                        result.elapsed = now - session_start - total_paused
-                        return
-                    elif key == ' ':
-                        pause_start = time.monotonic()
-                        progress = phase_elapsed / phase_dur
-                        elapsed_now = now - session_start - total_paused
-                        render_frame(layout, config, elapsed_now, phase,
-                                     progress, True, muted)
-                        abort_in_pause = False
-                        while True:
-                            if _abort[0]:
-                                abort_in_pause = True
-                                break
-                            pk = poll_key()
-                            if pk == ' ':
-                                break
-                            elif pk == 'q':
-                                abort_in_pause = True
-                                break
-                            elif pk == 's':
-                                muted = not muted
-                                render_frame(layout, config, elapsed_now, phase,
-                                             progress, True, muted)
-                            time.sleep(FRAME_SLEEP)
-                        pause_dur = time.monotonic() - pause_start
-                        total_paused += pause_dur
-                        next_boundary += pause_dur
-                        phase_end += pause_dur
-                        if abort_in_pause:
-                            result.aborted = True
-                            result.elapsed = (time.monotonic() - session_start
-                                              - total_paused)
-                            return
-                        continue
-                    elif key == 's':
-                        muted = not muted
-
-                    progress = phase_elapsed / phase_dur
-                    elapsed_now = now - session_start - total_paused
-                    render_frame(layout, config, elapsed_now, phase,
-                                 progress, False, muted)
-                    time.sleep(FRAME_SLEEP)
-
-                # Advance to ideal boundary — no drift accumulation
-                next_boundary = phase_end
-
-                # Phase complete — count after exhale (= one full cycle)
-                if phase == EXHALE:
+            # Phase transition
+            if progress >= 1.0:
+                if state == INHALE:
+                    phase_start_wall += config.inhale_s
+                    state = EXHALE
+                    if not muted and audio_mode != 'none':
+                        play_sound(EXHALE, audio_mode)
+                else:
                     result.breaths += 1
+                    breathing_base = result.breaths * cycle_s
+                    if breathing_base >= config.duration_s:
+                        result.completed = True
+                        break
+                    phase_start_wall += config.exhale_s
+                    state = INHALE
+                    if not muted and audio_mode != 'none':
+                        play_sound(INHALE, audio_mode)
+                continue
 
-                elapsed = time.monotonic() - session_start - total_paused
-                if elapsed >= config.duration_s:
-                    result.completed = True
-                    break
-                if _abort[0]:
-                    result.aborted = True
-                    break
+            # Smooth countdown: breathing_base + time into cycle
+            if state == INHALE:
+                elapsed_display = breathing_base + phase_elapsed
+            else:
+                elapsed_display = (breathing_base + config.inhale_s
+                                   + phase_elapsed)
 
-            if result.completed or result.aborted:
+            key = poll_key()
+            if key == 'q':
+                result.aborted = True
                 break
+            elif key == ' ':
+                paused_phase = state
+                paused_progress = progress
+                state = PAUSED
+                render_frame(layout, config, breathing_base, paused_phase,
+                             paused_progress, True, muted)
+                time.sleep(FRAME_SLEEP)
+                continue
+            elif key == 's':
+                muted = not muted
 
-        result.elapsed = time.monotonic() - session_start - total_paused
+            render_frame(layout, config, elapsed_display, state,
+                         progress, False, muted)
+            time.sleep(FRAME_SLEEP)
+
+        result.elapsed = breathing_base
 
     finally:
         sys.stdout.write(ANSI_SHOW_CUR)

@@ -16,6 +16,12 @@ Append-only CSV at `~/.breathe_log.csv`. Spec §5.7. Flags:
 
 ## Bugs
 
+### 10. End-of-session rendering glitch
+On session completion the loop breaks without rendering a final frame.
+The bar and countdown freeze at their last state (e.g. bar at ~90%,
+countdown at 00:01) before the session summary appears. Minor visual
+annoyance, not a logic bug.
+
 ### 6. Sound cues play in wrong location
 Sound cues are triggering but seem misattributed or misplaced.
 Needs investigation and fix.
