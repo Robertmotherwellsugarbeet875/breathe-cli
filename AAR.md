@@ -16,3 +16,15 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 **What we'll do differently:**
 - When approaching the 700-line cap, consider whether the cap should be revisited in the spec rather than spending effort on cosmetic compaction. The file is already well past the 500-line target
 - Always clean up TODO.md during the close checklist, not just when adding items
+
+## 2026-05-26 — Go rewrite analysis (Six Thinking Hats)
+
+**What went well:**
+- The Six Hats analysis was productive and grounded — reading the full implementation first (rather than reasoning abstractly) gave concrete data for each hat
+- The analysis correctly identified that the tool's constraints (safety, terminal restoration, timing) are language-agnostic, so a rewrite wouldn't improve the things that actually matter
+
+**What didn't go well:**
+- Nothing notable — this was a short advisory session with no code changes
+
+**What we'll do differently:**
+- Nothing to change — lightweight analysis sessions like this are a good way to evaluate ideas before committing effort
