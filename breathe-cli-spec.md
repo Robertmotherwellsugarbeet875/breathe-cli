@@ -3,7 +3,7 @@ title: 'Breathe CLI — Specification'
 subtitle: 'A paced-breathing terminal app for HFrEF vagal training'
 author: 'Marek Kowalczyk (spec by Claude, for Claude Opus 4.6)'
 date: 2026-04-20
-version: 1.3
+version: 1.4
 target_platform: 'macOS 10.14.6 (Mojave)'
 target_runtime: 'Python 3.7+ stdlib only'
 status: 'ready to implement'
@@ -332,7 +332,7 @@ supported width is 40 columns. Below that, print a warning and run in
 
 ```text
 ┌────────────────────────────────────────────────┐
-│  morning · 5-5 · 02:37 / 10:00           [●]   │  ← header (1 line)
+│  morning · 5-5 · 07:23                   [●]   │  ← header (1 line)
 │                                                │
 │                                                │
 │                                                │
@@ -352,11 +352,11 @@ Vertical centring: compute once at session start using terminal height
 
 ### 7.2 Header
 
-Format: `{preset_or_custom} · {ratio} · {elapsed} / {total}   [{indicator}]`
+Format: `{preset_or_custom} · {ratio} · {remaining}   [{indicator}]`
 
 - `preset_or_custom`: preset name, or literal string `custom` for `-d`/`-r`
 - `ratio`: e.g. `5-5` or `4-6`
-- `elapsed` / `total`: `MM:SS` format
+- `remaining`: time left in `MM:SS` format (counts down from target duration; freezes while paused)
 - `indicator`: `●` when running, `⏸` when paused, `🔇` when muted, combined if both (e.g. `⏸ 🔇`)
 
 ### 7.3 Phase label
@@ -687,7 +687,7 @@ manually; no test framework required.
 
 ### 13.4 Runtime-control tests
 
-15. During a session, pressing `space` freezes the bar and header shows `⏸`. Pressing `space` again resumes. Paused time is excluded from the elapsed clock — if you pause for 30 seconds during a 1-minute session, the session should take ~90 seconds wall-clock to complete.
+15. During a session, pressing `space` freezes the bar and header shows `⏸`. Pressing `space` again resumes. Paused time is excluded from the countdown — the countdown freezes while paused. If you pause for 30 seconds during a 1-minute session, the session should take ~90 seconds wall-clock to complete.
 16. During a session, pressing `s` toggles the mute indicator `🔇` and stops/restores sound without pausing.
 17. During a session, pressing `q` exits with `ended early (user)` status within 1 second.
 
@@ -698,9 +698,9 @@ manually; no test framework required.
 ### 13.6 Time-of-day default test
 
 19. Run `breathe` with no arguments at different times of day (or mock `time.localtime`). Verify:
-    - Before noon: header shows `morning · 5-5 · ... / 10:00`
-    - 12:00–16:59: header shows `long · 4-6 · ... / 20:00`
-    - 17:00+: header shows `evening · 4-6 · ... / 15:00`
+    - Before noon: header shows `morning · 5-5 · 10:00 ...` (counting down)
+    - 12:00–16:59: header shows `long · 4-6 · 20:00 ...` (counting down)
+    - 17:00+: header shows `evening · 4-6 · 15:00 ...` (counting down)
 
 ### 13.7 Session logging tests
 

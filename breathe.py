@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 # ── Constants ────────────────────────────────────────────────────────
 
-VERSION = '1.3'
+VERSION = '1.4'
 
 PRESETS = {
     'morning': {'duration_min': 10, 'inhale_s': 5, 'exhale_s': 5},
@@ -268,9 +268,9 @@ def draw_header(layout, config, elapsed, paused, muted):
     if not parts:
         parts.append('\u25cf' if layout.use_unicode else '*')
     indicator = ' '.join(parts)
-    line = '  {} \u00b7 {} \u00b7 {} / {}   [{}]'.format(
+    line = '  {} \u00b7 {} \u00b7 {}   [{}]'.format(
         config.preset_name, config.ratio_str,
-        format_mmss(elapsed), format_mmss(config.duration_s),
+        format_mmss(max(0, config.duration_s - elapsed)),
         indicator,
     )
     sys.stdout.write(line)

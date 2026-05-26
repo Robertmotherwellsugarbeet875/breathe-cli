@@ -42,11 +42,8 @@ Change `INHALE` / `EXHALE` to `IN` / `OUT`. Quieter, less clinical,
 matches the minimal aesthetic. Verify the horizontal centering still
 looks right with the shorter strings.
 
-### 7. Replace count-up timer with countdown
-In the header's upper-left, replace the elapsed count-up display
-(`05:58 / 20:00`) with a simple countdown showing remaining time
-(e.g. `19:25`). More useful at a glance — the user cares about
-how much is left, not how much has passed.
+### ~~7. Replace count-up timer with countdown~~ DONE (v1.4)
+Header now shows remaining time counting down instead of elapsed/total.
 
 ### 8. Session progress bar (cycle count)
 Add a second horizontal bar below the breath bar that tracks
