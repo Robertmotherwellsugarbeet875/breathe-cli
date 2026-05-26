@@ -3,7 +3,7 @@ title: 'Breathe CLI — Specification'
 subtitle: 'A paced-breathing terminal app for HFrEF vagal training'
 author: 'Marek Kowalczyk (spec by Claude, for Claude Opus 4.6)'
 date: 2026-04-20
-version: 1.4
+version: 1.5
 target_platform: 'macOS 10.14.6 (Mojave)'
 target_runtime: 'Python 3.7+ stdlib only'
 status: 'ready to implement'
@@ -146,7 +146,7 @@ loaded from external config. v1 does not support user-defined presets.
 
 | Key | Action |
 |-----|--------|
-| `space` | Pause / resume. Pause freezes the animation, mutes cues, and stops the session clock — paused time does not count toward elapsed duration or completion percentage. |
+| `space` | Pause / resume. Pause freezes the bar and countdown at the moment of pause. Resume restarts the current breath cycle from the beginning of INHALE — the interrupted cycle is discarded. The countdown tracks completed breathing time only: it advances smoothly during a cycle but snaps back to the last completed cycle boundary on resume. Session duration equals the sum of fully completed cycles. |
 | `s` | Toggle sound on/off without pausing. |
 | `q` or `Ctrl+C` | End session. Show exit summary. |
 
@@ -308,7 +308,7 @@ options block showing `breathe --preset morning`.
 
 ### 6.7 `breathe --version`
 
-Prints `breathe 1.3` and exits 0.
+Prints `breathe 1.5` and exits 0.
 
 ### 6.8 `breathe --log`
 
@@ -357,7 +357,7 @@ Format: `{preset_or_custom} · {ratio} · {remaining}   [{indicator}]`
 - `preset_or_custom`: preset name, or literal string `custom` for `-d`/`-r`
 - `ratio`: e.g. `5-5` or `4-6`
 - `remaining`: time left in `MM:SS` format (counts down from target duration; freezes while paused)
-- `indicator`: `●` when running, `⏸` when paused, `🔇` when muted, combined if both (e.g. `⏸ 🔇`)
+- `indicator`: `●` when running, `‖` (U+2016) when paused, `🔇` when muted, combined if both (e.g. `‖ 🔇`)
 
 ### 7.3 Phase label
 
@@ -530,46 +530,77 @@ run_session(config):
     try:
         clear screen, draw static header
         do 3-second countdown
-        mark session_start = time.monotonic()
-        next_boundary = session_start   # ideal wall-clock phase edge
-        total_paused = 0
-        while elapsed_breathing < config.duration_seconds:
-            for phase in (INHALE, EXHALE):
-                phase_duration = config.inhale_s if INHALE else config.exhale_s
-                phase_end = next_boundary + phase_duration
-                play sound for phase
-                while time.monotonic() < phase_end:
-                    key = poll_key()  # non-blocking
-                    handle key (pause / mute / quit)
-                    if paused:
-                        pause_start = time.monotonic()
-                        wait on key, then resume
-                        pause_dur = time.monotonic() - pause_start
-                        total_paused += pause_dur
-                        next_boundary += pause_dur  # shift ideal edge
-                        phase_end    += pause_dur
-                    if quit: raise SessionAborted
-                    progress = (now - next_boundary) / phase_duration
-                    render_frame(state, phase, progress)
-                    sleep 50 ms
-                next_boundary = phase_end  # advance to ideal edge
-                # phase complete — count only after EXHALE (= one full cycle)
-                if phase is EXHALE:
-                    increment breath counter
-            elapsed_breathing = time.monotonic() - session_start - total_paused
-            if elapsed_breathing >= duration_seconds: break
+        cycle_s = config.inhale_s + config.exhale_s
+        state = INHALE
+        phase_start_wall = time.monotonic()
+        breathing_base = 0          # completed breathing time
+        play inhale sound
+
+        while True:
+            now = time.monotonic()
+
+            if state == PAUSED:
+                handle key:
+                    space → if breathing_base >= duration: completed, break
+                            state = INHALE
+                            phase_start_wall = now
+                            play inhale sound
+                    q     → aborted, break
+                    s     → toggle mute
+                render paused frame (elapsed=paused_elapsed, frozen)
+                sleep 50 ms, continue
+
+            # INHALE or EXHALE
+            phase_dur = inhale_s or exhale_s
+            phase_elapsed = now - phase_start_wall
+            progress = phase_elapsed / phase_dur
+
+            if progress >= 1.0:                     # phase complete
+                if INHALE:
+                    phase_start_wall += inhale_s     # drift-free advance
+                    state = EXHALE, play exhale sound
+                else:  # EXHALE
+                    breaths += 1
+                    breathing_base = breaths * cycle_s
+                    if breathing_base >= duration: completed, break
+                    phase_start_wall += exhale_s
+                    state = INHALE, play inhale sound
+                continue
+
+            # smooth countdown: breathing_base + time into current cycle
+            elapsed_display = breathing_base + (phase_elapsed if INHALE
+                              else inhale_s + phase_elapsed)
+
+            handle key:
+                q     → aborted, break
+                space → cache elapsed_display and progress
+                        state = PAUSED, continue
+                s     → toggle mute
+
+            render_frame(elapsed=elapsed_display, phase, progress)
+            sleep 50 ms
+
+        result.elapsed = breathing_base
     finally:
         restore terminal
-    return state
+    return result
 ```
 
-**Timing model.** Phase boundaries are computed from ideal offsets
-anchored to `session_start`, not from `time.monotonic()` at the moment
-the previous phase finishes. Each frame's `time.sleep(50 ms)` overshoots
-by 1–3 ms due to work before and after the sleep; without anchored
-boundaries this accumulates to seconds of audible drift over a full
-session. The `next_boundary` variable eliminates drift by advancing by
-the exact phase duration at each transition.
+**Timing model.** The loop is a flat state machine with three states:
+INHALE, EXHALE, PAUSED. Phase progress is computed from wall-clock time
+(`now - phase_start_wall`). On phase transitions, `phase_start_wall`
+advances by the exact phase duration (not reset to `now`), preventing
+frame-processing jitter from accumulating into drift.
+
+**Elapsed time model.** The countdown tracks completed breathing time,
+not wall-clock time minus pauses. `breathing_base` = `breaths * cycle_s`
+is the time of fully completed cycles. During a cycle, `elapsed_display`
+adds the in-progress phase time for smooth countdown. On pause, the
+display freezes at the moment of pause. On resume, both bar and
+countdown snap back to `breathing_base` (the last cycle boundary) and a
+new INHALE begins. Session completion is checked only at cycle
+boundaries (`breathing_base >= duration`), so `result.elapsed` is always
+an exact multiple of `cycle_s`.
 
 ### 9.4 Key handling detail
 
@@ -625,7 +656,7 @@ Commit these values directly into the source file. Do not invent a
 config-file layer.
 
 ```python
-VERSION = '1.3'
+VERSION = '1.5'
 
 LOG_FILE = '~/.breathe_log.csv'
 LOG_HEADER = 'date,time,preset,ratio,duration_target_s,duration_actual_s,breaths,completion_pct,status'
@@ -687,7 +718,7 @@ manually; no test framework required.
 
 ### 13.4 Runtime-control tests
 
-15. During a session, pressing `space` freezes the bar and header shows `⏸`. Pressing `space` again resumes. Paused time is excluded from the countdown — the countdown freezes while paused. If you pause for 30 seconds during a 1-minute session, the session should take ~90 seconds wall-clock to complete.
+15. During a session, pressing `space` freezes the bar and countdown at their current positions and the header shows `‖`. Pressing `space` again resumes: the bar resets to the beginning of INHALE and the countdown snaps back to the last completed cycle boundary. The interrupted cycle does not count toward breaths. If you pause for 30 seconds during a 1-minute session, the session should take ~90 seconds wall-clock to complete (completed breathing time is still exactly 60 seconds).
 16. During a session, pressing `s` toggles the mute indicator `🔇` and stops/restores sound without pausing.
 17. During a session, pressing `q` exits with `ended early (user)` status within 1 second.
 

@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 # ── Constants ────────────────────────────────────────────────────────
 
-VERSION = '1.4'
+VERSION = '1.5'
 
 PRESETS = {
     'morning': {'duration_min': 10, 'inhale_s': 5, 'exhale_s': 5},
