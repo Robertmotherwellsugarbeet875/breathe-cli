@@ -425,7 +425,7 @@ def run_session(config, result):
                         play_sound(INHALE, audio_mode)
                 elif key == 's':
                     muted = not muted
-                render_frame(layout, config, breathing_base, paused_phase,
+                render_frame(layout, config, paused_elapsed, paused_phase,
                              paused_progress, True, muted)
                 time.sleep(FRAME_SLEEP)
                 continue
@@ -473,8 +473,9 @@ def run_session(config, result):
             elif key == ' ':
                 paused_phase = state
                 paused_progress = progress
+                paused_elapsed = elapsed_display
                 state = PAUSED
-                render_frame(layout, config, breathing_base, paused_phase,
+                render_frame(layout, config, paused_elapsed, paused_phase,
                              paused_progress, True, muted)
                 time.sleep(FRAME_SLEEP)
                 continue
