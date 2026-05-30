@@ -27,7 +27,13 @@ Do not add breathing patterns, retention phases, or cycle speeds not in the spec
 
 ## Testing
 
-No test framework. The spec (§3) defines 25 manual acceptance tests. Run them in order. Pay special attention to:
+**Automated tests**: `test_breathe.py` using stdlib `unittest`. Covers logic and arithmetic: formatting, ratio parsing, safety rejections, preset invariants, completion percentage, countdown/remaining-time calculation, pause-resume snap-back. Run with:
+
+```
+python3 -m unittest test_breathe -v
+```
+
+**Manual acceptance tests**: the spec (§3) defines 25 manual tests for TUI behaviour. Run them in order. Pay special attention to:
 
 - **Test 18** (terminal restoration on exception) — this validates the most critical code path.
 - **Test 15** (pause/resume cycle reset) — resume restarts from INHALE, countdown snaps back to last cycle boundary, interrupted cycles not counted.
@@ -45,6 +51,7 @@ No test framework. The spec (§3) defines 25 manual acceptance tests. Run them i
 
 ```
 breathe.py            # the app (single file, under 700 lines)
+test_breathe.py       # automated tests (stdlib unittest)
 breathe-cli-spec.md   # safety constraints and acceptance tests
 TODO.md               # bugs and enhancements tracker
 CLAUDE.md             # this file

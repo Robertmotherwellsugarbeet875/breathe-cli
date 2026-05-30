@@ -256,6 +256,7 @@ def draw_bar(layout, progress, phase):
 def draw_progress(layout, config, elapsed):
     move_to(layout.progress_row, 1)
     sys.stdout.write(ANSI_CLR_LINE)
+    cycle_s = config.inhale_s + config.exhale_s
     frac = min(1.0, elapsed / config.duration_s) if config.duration_s > 0 else 1.0
     filled = round(frac * BAR_WIDTH)
     filled = max(0, min(BAR_WIDTH, filled))
@@ -440,16 +441,18 @@ def run_session(config, result):
                 phase_elapsed = now - phase_start_wall
                 progress = phase_elapsed / phase_dur
 
-            # Smooth elapsed for progress bar; integer seconds for countdown
+            # Countdown: integer seconds remaining based on actual
+            # session length (which is always a multiple of cycle_s).
+            clean_phase_s = int(phase_elapsed)
             if state == INHALE:
                 elapsed_display = breathing_base + phase_elapsed
                 remaining_s = (config.duration_s - breathing_base
-                               - int(phase_elapsed))
+                               - clean_phase_s)
             else:
                 elapsed_display = (breathing_base + config.inhale_s
                                    + phase_elapsed)
                 remaining_s = (config.duration_s - breathing_base
-                               - config.inhale_s - int(phase_elapsed))
+                               - config.inhale_s - clean_phase_s)
 
             key = poll_key()
             if key == 'q':
@@ -646,8 +649,13 @@ def main():
     if not (1 <= duration_min <= 60):
         _die('Duration must be 1\u201360 minutes.')
 
+    # Round duration up to a whole number of breath cycles so that
+    # the countdown, progress bar, and session end are all in sync.
+    cycle_s = inhale_s + exhale_s
+    duration_s = -(-duration_min * 60 // cycle_s) * cycle_s
+
     config = Config(
-        duration_s=duration_min * 60,
+        duration_s=duration_s,
         inhale_s=inhale_s,
         exhale_s=exhale_s,
         preset_name=preset_name,

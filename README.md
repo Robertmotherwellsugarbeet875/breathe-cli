@@ -154,6 +154,16 @@ date,time,preset,ratio,duration_target_s,duration_actual_s,breaths,completion_pc
 
 Use `--no-log` to skip logging for a session. Use `--log` to see the log file path.
 
+## Testing
+
+Automated tests cover logic and arithmetic (formatting, ratio parsing, safety rejections, preset invariants, countdown calculation):
+
+```bash
+python3 -m unittest test_breathe -v
+```
+
+TUI behaviour (rendering, animation, terminal restoration) is covered by 25 manual acceptance tests in `breathe-cli-spec.md`.
+
 ## Safety
 
 Run `breathe --safety` for the full safety screen. The short version:
