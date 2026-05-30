@@ -420,6 +420,9 @@ def run_session(config, result):
                     break
                 elif key == ' ':
                     if breathing_base >= config.duration_s:
+                        render_frame(layout, config, config.duration_s,
+                                     EXHALE, 1.0, False, muted)
+                        time.sleep(0.4)
                         result.completed = True
                         break
                     state = INHALE
@@ -454,6 +457,9 @@ def run_session(config, result):
                     result.breaths += 1
                     breathing_base = result.breaths * cycle_s
                     if breathing_base >= config.duration_s:
+                        render_frame(layout, config, config.duration_s,
+                                     EXHALE, 1.0, False, muted)
+                        time.sleep(0.4)
                         result.completed = True
                         break
                     phase_start_wall += config.exhale_s

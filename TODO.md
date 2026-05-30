@@ -16,11 +16,11 @@ Append-only CSV at `~/.breathe_log.csv`. Spec §5.7. Flags:
 
 ## Bugs
 
-### 10. End-of-session rendering glitch
-On session completion the loop breaks without rendering a final frame.
-The countdown reaches 00:00 before the bar completes its final exhale —
-the timer and bar fall out of sync in the last cycle. Minor visual
-annoyance, not a logic bug.
+### ~~10. End-of-session rendering glitch~~ FIXED
+Session completion broke out of the loop without rendering. Now renders
+a final frame (EXHALE at full progress, countdown 00:00) and holds
+400ms before exiting. Both the normal transition path and the
+pause-resume completion path are covered.
 
 ### ~~12. Inhale bar never reaches full scale~~ FIXED
 `int()` truncated the last fractional segment — `int(0.98 * 30) = 29`.
