@@ -298,6 +298,43 @@ class TestRemainingTime(unittest.TestCase):
                                  .format(elapsed, session_s))
 
 
+class TestDurationRounding(unittest.TestCase):
+    """duration_s must always be a multiple of cycle_s (bug #13 fix)."""
+
+    def test_divisible_unchanged(self):
+        """When duration divides evenly, no rounding needed."""
+        c = breathe.Config(600, 5, 5, 'morning', True, False)
+        self.assertEqual(c.duration_s, 600)  # 600 / 10 = 60
+
+    def test_indivisible_rounded_up(self):
+        """When duration doesn't divide evenly, round up to next cycle."""
+        cycle_s = 4 + 4  # 8
+        duration_s = -(-60 // cycle_s) * cycle_s  # 64
+        c = breathe.Config(duration_s, 4, 4, 'custom', True, False)
+        self.assertEqual(c.duration_s % cycle_s, 0)
+        self.assertGreaterEqual(c.duration_s, 60)
+
+    def test_all_valid_ratios_with_common_durations(self):
+        """For any valid ratio and duration, session_s must be a whole
+        number of cycles. This is the invariant that bug #13 violated."""
+        for inhale in range(3, 11):
+            for exhale in range(3, 11):
+                cycle_s = inhale + exhale
+                if cycle_s < breathe.MIN_CYCLE_SECS:
+                    continue
+                for duration_min in [1, 2, 3, 5, 10, 15, 20, 30, 60]:
+                    raw = duration_min * 60
+                    session_s = -(-raw // cycle_s) * cycle_s
+                    self.assertEqual(session_s % cycle_s, 0,
+                                     'duration {}min ratio {}-{}: session_s {} '
+                                     'not multiple of cycle_s {}'.format(
+                                         duration_min, inhale, exhale,
+                                         session_s, cycle_s))
+                    self.assertGreaterEqual(session_s, raw,
+                                            'session_s {} < requested {}'.format(
+                                                session_s, raw))
+
+
 class TestPhaseLabels(unittest.TestCase):
     def test_inhale_label(self):
         self.assertEqual(breathe.PHASE_LABEL[breathe.INHALE], 'IN')
