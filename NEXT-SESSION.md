@@ -1,5 +1,5 @@
 # Next Session
 
-- **Bug #10**: End-of-session rendering glitch — bar and countdown don't reach final state before summary appears. Fix: render one final frame before breaking the loop.
-- **Bug #6**: Sound cues play in wrong location — needs investigation. May need re-testing after the state machine refactor since audio cue triggers moved.
-- **Enhancement #3**: README.md — still the most impactful missing piece for project completeness.
+- **README.md** (TODO #3) — the app has no user-facing docs yet. Add usage, presets, flags, runtime keys, and the clinical rationale section.
+- **Shorter phase labels** (TODO #5) — quick win: `INHALE`/`EXHALE` → `IN`/`OUT`. Verify centering.
+- **Session progress bar** (TODO #4 or #8) — pick one variant (time-based or cycle-count) and design the layout. Watch the 700-line cap (currently 646, ~54 lines of headroom).
