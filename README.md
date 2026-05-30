@@ -1,5 +1,10 @@
 # Breathe CLI
 
+[![PyPI version](https://img.shields.io/pypi/v/breathe-cli)](https://pypi.org/project/breathe-cli/)
+[![Python 3.7+](https://img.shields.io/pypi/pyversions/breathe-cli)](https://pypi.org/project/breathe-cli/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Homebrew](https://img.shields.io/badge/homebrew-tap-orange)](https://github.com/marekkowalczyk/homebrew-breathe)
+
 A terminal app that paces resonance breathing for vagal tone training. macOS only, single file, no dependencies.
 
 ```
