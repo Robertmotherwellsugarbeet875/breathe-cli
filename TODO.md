@@ -22,9 +22,11 @@ The countdown reaches 00:00 before the bar completes its final exhale —
 the timer and bar fall out of sync in the last cycle. Minor visual
 annoyance, not a logic bug.
 
-### 6. Sound cues play in wrong location
-Sound cues are triggering but seem misattributed or misplaced.
-Needs investigation and fix.
+### ~~6. Sound cues play in wrong location~~ FIXED
+Phase transition hit `continue` before rendering, so the sound fired
+while the screen still showed the previous phase. Fixed by falling
+through to render_frame on the transition iteration. Also swapped
+audio priority to prefer afplay over AudioToolbox (silent on Mojave).
 
 ## Enhancements
 
