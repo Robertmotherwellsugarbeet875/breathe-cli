@@ -44,45 +44,11 @@ Replaced triple-nested render loop with flat state machine
 Countdown tracks completed breathing time only. Pause indicator
 changed from ⏸ to ‖ (U+2016) to fix bracket shift.
 
-### 13. Countdown hits 00:00 one exhale-phase early
-The countdown timer in the header reaches 00:00 at the end of the last
-INHALE and stays at 00:00 throughout the entire last EXHALE (5–6 s of
-breathing remain). The progress bar fills correctly — the two are out
-of sync.
-
-**Root cause (not yet identified):** the displayed remaining time
-"runs too quickly" relative to the progress bar even though both
-derive from `elapsed_display`. The counter reaches `duration_s`
-one `exhale_s` before the session actually ends. This implies the
-remaining-time calculation accumulates a full phase of error over
-the session, but the exact mechanism is unclear.
-
-**Desired behaviour:** the countdown ticks smoothly second by second,
-reaches 00:00 at the exact moment the session ends (last exhale
-completes), and snaps to an exact multiple of `cycle_s` on
-pause → resume.
-
-**Failed fixes (v1.6):**
-1. *Ceil rounding in `format_mmss`* — changed `int()` to ceiling.
-   Made each displayed second 1 s too high (e.g. 36 instead of 35).
-   Did not fix the early-zero problem.
-2. *Fall-through from PAUSED* — eliminated stale paused frame on
-   resume by falling through to active code instead of rendering
-   one more paused frame + continue. Reduced visual glitch but did
-   not fix the early-zero problem.
-3. *Stepped countdown (phase-boundary only)* — replaced smooth
-   countdown with a value that only changed at phase transitions
-   (`duration_s - breathing_base` during INHALE, minus `inhale_s`
-   during EXHALE). Removed the smooth tick the user wants; still
-   showed zero one phase early.
-4. *`int(phase_elapsed)` for countdown* — used floor of complete
-   seconds instead of raw float for the countdown while keeping
-   smooth float for the progress bar. Counter ticks smoothly again
-   but still hits 00:00 at end of last inhale.
-
-All four attempts addressed display rounding without fixing the
-underlying calculation. The remaining-time value itself is wrong
-by the time the last cycle begins.
+### ~~13. Countdown hits 00:00 one exhale-phase early~~ FIXED (v1.7)
+Root cause: `duration_s` was not always a multiple of `cycle_s`.
+The session runs `ceil(duration/cycle)` full cycles, but the
+countdown counted down from the raw `duration_s`. Fix: round
+`duration_s` up to a whole number of cycles at config time.
 
 ### 8. Session progress bar (cycle count)
 Add a second horizontal bar below the breath bar that tracks
