@@ -10,4 +10,6 @@ v1.8 shipped: science section, functional presets (balanced/calm/extended), exha
 
 ## Publishing
 
-See `PUBLISH.taskpaper` for the full checklist. Done: commit, repo creation, description, topics. Remaining: tag, release, GitHub Pages, Homebrew tap, PyPI, community posts.
+Done: repo, description, topics, tag, release, GitHub Pages, Google Search Console, social card, Homebrew tap, PyPI. HN post submitted but auto-flagged; emailed hn@ycombinator.com (2026-05-30).
+
+Remaining: awesome list submissions (need 30+ stars first), Reddit posts, ORCID link, Zenodo DOI. See `PUBLISH.taskpaper` (gitignored, local only) for the full checklist.

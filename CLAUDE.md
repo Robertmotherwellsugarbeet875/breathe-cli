@@ -53,6 +53,7 @@ python3 -m unittest test_breathe -v
 ```
 breathe.py            # the app (single file, under 700 lines)
 test_breathe.py       # automated tests (stdlib unittest)
+social-card.png       # GitHub/Open Graph social preview (1200×630)
 LICENSE               # MIT license
 CLAUDE.md             # this file
 dev/
@@ -60,4 +61,5 @@ dev/
   TODO.md             # bugs and enhancements tracker
   AAR.md              # after action reviews
   NEXT-SESSION.md     # session continuity notes
+  social-card.html    # social card design template
 ```
