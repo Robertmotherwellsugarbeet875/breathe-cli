@@ -10,27 +10,16 @@ start. Eliminates cumulative sleep overshoot drift.
 ### ~~2. Time-of-day-aware default preset~~ DONE (v1.2)
 Auto-selects preset by time of day when invoked with no arguments.
 
+### ~~6, 10, 12. Bug fixes and audio refactor~~ DONE (v1.6)
+Fixed sound cue sync (render new phase on transition frame), end-of-
+session rendering (final frame + 400ms hold), and inhale bar one
+segment short (`int` → `round`). Removed AudioToolbox ctypes fallback
+(silently fails on Mojave); afplay is now the sole audio backend.
+Consolidated summary/log pct/status calculation. 711 → 646 lines.
+
 ### ~~9. Session logging to disk~~ DONE (v1.3)
 Append-only CSV at `~/.breathe_log.csv`. Spec §5.7. Flags:
 `--log` (show path), `--no-log` (suppress for one session).
-
-## Bugs
-
-### ~~10. End-of-session rendering glitch~~ FIXED
-Session completion broke out of the loop without rendering. Now renders
-a final frame (EXHALE at full progress, countdown 00:00) and holds
-400ms before exiting. Both the normal transition path and the
-pause-resume completion path are covered.
-
-### ~~12. Inhale bar never reaches full scale~~ FIXED
-`int()` truncated the last fractional segment — `int(0.98 * 30) = 29`.
-Switched to `round()` so near-full progress maps to a full bar.
-
-### ~~6. Sound cues play in wrong location~~ FIXED
-Phase transition hit `continue` before rendering, so the sound fired
-while the screen still showed the previous phase. Fixed by falling
-through to render_frame on the transition iteration. Also swapped
-audio priority to prefer afplay over AudioToolbox (silent on Mojave).
 
 ## Enhancements
 
