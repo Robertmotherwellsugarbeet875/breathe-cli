@@ -67,3 +67,14 @@ two bars with ~5 px (blank lines or spacing) so they're close
 but visually distinct. Requires adjusting layout row calculations.
 Note: this is related to but distinct from enhancement #4 (which
 tracks elapsed time); this one tracks completed breath cycles.
+
+### 14. Breathing modes beyond vagal tone
+Broaden the app to support multiple breathing purposes (e.g. focus,
+relaxation, box breathing) as distinct modes. Current safety
+guardrails (no retention, no rapid breathing, ≥8s cycle) apply to
+the vagal/HFrEF mode only. Other modes would define their own
+constraints — e.g. box breathing would allow holds but enforce its
+own limits. This is a significant architectural change: mode
+selection, per-mode presets, per-mode guardrails, and updated
+safety messaging. The single-file constraint may become the
+binding limit.
