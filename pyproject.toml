@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "breathe-cli"
+version = "1.8"
+description = "Paced resonance breathing for vagal tone training. Single-file terminal app, no dependencies."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.7"
+authors = [
+    { name = "Marek Kowalczyk", email = "mko1971@gmail.com" },
+]
+keywords = [
+    "breathing", "resonance-breathing", "hrv", "heart-rate-variability",
+    "vagal-tone", "biofeedback", "cli", "terminal", "health",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Healthcare Industry",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+
+[project.urls]
+Homepage = "https://github.com/marekkowalczyk/breathe-cli"
+Documentation = "https://marekkowalczyk.github.io/breathe-cli/"
+Issues = "https://github.com/marekkowalczyk/breathe-cli/issues"
+
+[project.scripts]
+breathe = "breathe:main"
+
+[tool.setuptools]
+py-modules = ["breathe"]
