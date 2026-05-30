@@ -194,17 +194,20 @@ class _SystemSoundPlayer:
 _sys_sound_player = None  # set by check_audio()
 
 def check_audio(quiet):
-    """Init audio subsystem. Returns 'system', 'afplay', 'bell'."""
+    """Init audio subsystem. Returns 'afplay', 'system', 'bell'."""
     global _sys_sound_player
-    try:  # Prefer AudioToolbox: no run loop, near-zero latency
-        _sys_sound_player = _SystemSoundPlayer()
-        return 'system'
-    except (OSError, AttributeError, TypeError):
-        pass
+    # Prefer afplay: reliable on all macOS versions including Mojave,
+    # where AudioServicesPlaySystemSound can silently fail from a CLI
+    # process without a run loop.
     if (os.path.isfile(AFPLAY) and os.access(AFPLAY, os.X_OK)
             and os.path.isfile(SOUND_INHALE)
             and os.path.isfile(SOUND_EXHALE)):
         return 'afplay'
+    try:
+        _sys_sound_player = _SystemSoundPlayer()
+        return 'system'
+    except (OSError, AttributeError, TypeError):
+        pass
     if not quiet:
         sys.stderr.write('audio unavailable: falling back to terminal bell\n')
     return 'bell'
@@ -457,7 +460,13 @@ def run_session(config, result):
                     state = INHALE
                     if not muted and audio_mode != 'none':
                         play_sound(INHALE, audio_mode)
-                continue
+                # Recalculate for the new phase so the render below
+                # shows the correct label and bar on the same frame
+                # the sound fires (no stale-frame flicker).
+                phase_dur = (config.inhale_s if state == INHALE
+                             else config.exhale_s)
+                phase_elapsed = now - phase_start_wall
+                progress = phase_elapsed / phase_dur
 
             # Smooth countdown: breathing_base + time into cycle
             if state == INHALE:
