@@ -98,7 +98,7 @@ breathe --ratio 4-6                 # default 10 minutes, 4-6 ratio
 breathe --duration 12 --ratio 4-6   # 12 minutes, 4-6 ratio
 ```
 
-Duration: 1–60 minutes. Ratio: inhale and exhale each 3–10 seconds, total cycle >= 8 seconds.
+Duration: 1–60 minutes (rounded up to complete breath cycles). Ratio: inhale and exhale each 3–10 seconds, total cycle >= 8 seconds.
 
 ### Flags
 

@@ -1,6 +1,6 @@
 # Next Session
 
-v1.7 shipped: bug #13 (countdown desync) fixed, automated test suite added (39 tests). Currently 688 lines.
+v1.7 shipped: bug #13 (countdown desync) fixed, automated test suite added (42 tests). Currently 688 lines.
 
 ## Open items
 

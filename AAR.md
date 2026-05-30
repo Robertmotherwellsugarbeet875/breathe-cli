@@ -61,3 +61,21 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 **What we'll do differently:**
 - After any structural change, proactively scan all docs for stale references and coordination issues
 - When a document is being maintained post-hoc rather than driving work, flag that to the user as a potential simplification opportunity
+
+## 2026-05-30 — Bug #13 fix, automated test suite (v1.7)
+
+**What went well:**
+- Debug logging to a file was the breakthrough — after four failed attempts based on code reading, instrumenting the actual runtime exposed the root cause in minutes
+- The fix was simple and correct once the real problem was identified: two lines at config time to round `duration_s` up to a whole number of cycles
+- Test suite infrastructure (42 tests) now exists, covering all logic and arithmetic paths including the bug #13 fix
+
+**What didn't go well:**
+- Spent five fix attempts patching symptoms (display rounding, phase offsets, stepped countdown) without questioning whether the inputs to the loop were correct — classic fixation on the wrong abstraction level
+- Failed to ship tests alongside the fix — user had to remind me, which is a basic engineering discipline failure
+- The `replace_all` for `session_s` clobbered unrelated `session_start_time` variables — careless use of a blunt tool
+
+**What we'll do differently:**
+- When designing flags or parameters that interact, always validate logical consistency at config time — the `-d`/`-r` inconsistency was introduced at the design level and haunted us for several rounds of failed fixes. Inputs that must be coordinated should be coordinated before they reach the runtime loop
+- When a bug survives multiple fix attempts, stop and instrument — add debug logging and observe actual values instead of reasoning from code alone
+- Always ship tests with code changes, never as a follow-up
+- When using replace_all, grep for collateral matches first

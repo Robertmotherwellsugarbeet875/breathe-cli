@@ -46,6 +46,7 @@ python3 -m unittest test_breathe -v
 - Elapsed time tracks completed breathing only (`breaths * cycle_s`). The state machine has no `total_paused` — pause simply stops the loop, resume resets the cycle.
 - The `-q` short flag (quiet mode) does not conflict with the `q` runtime key — one is argv, the other is stdin during a session.
 - `afplay` subprocess must never block the render loop. Use `Popen`, not `run`.
+- `duration_s` is rounded up to a whole number of `cycle_s` at config time. Never assume `duration_s == duration_min * 60` — they may differ for custom ratio/duration combinations.
 
 ## File layout
 
