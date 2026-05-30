@@ -4,7 +4,7 @@ Single-file Python 3 CLI app (`breathe.py`) that paces resonance breathing for H
 
 ## Spec
 
-The full specification is `breathe-cli-spec.md` (v1.5). Read it before implementing anything. It is the single source of truth.
+`breathe-cli-spec.md` contains safety constraints and acceptance tests. The code is the authority for behaviour; the spec guards the non-negotiable safety rationale.
 
 ## Key constraints
 
