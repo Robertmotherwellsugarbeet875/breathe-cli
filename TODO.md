@@ -23,12 +23,9 @@ Append-only CSV at `~/.breathe_log.csv`. Spec §5.7. Flags:
 
 ## Enhancements
 
-### 3. README.md
-Add a `README.md` with:
-- App functionality and usage (install, presets, flags, runtime keys)
-- A science section covering the clinical rationale: resonance
-  breathing at 6 bpm, vagal tone, HFrEF context, Bernardi protocol
-  references
+### ~~3. README.md~~ DONE (v1.6)
+Usage docs, clinical rationale (Bernardi, RSA, HFrEF), design
+choices, presets/flags/runtime keys, session logging, safety.
 
 ### 4. Session progress bar (time-based)
 Add a second horizontal bar below the breath bar that shows overall
