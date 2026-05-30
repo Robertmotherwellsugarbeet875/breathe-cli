@@ -4,7 +4,7 @@ Single-file Python 3 CLI app (`breathe.py`) that paces resonance breathing for H
 
 ## Spec
 
-`breathe-cli-spec.md` contains safety constraints and acceptance tests. The code is the authority for behaviour; the spec guards the non-negotiable safety rationale.
+`dev/breathe-cli-spec.md` contains safety constraints and acceptance tests. The code is the authority for behaviour; the spec guards the non-negotiable safety rationale.
 
 ## Key constraints
 
@@ -53,8 +53,11 @@ python3 -m unittest test_breathe -v
 ```
 breathe.py            # the app (single file, under 700 lines)
 test_breathe.py       # automated tests (stdlib unittest)
-breathe-cli-spec.md   # safety constraints and acceptance tests
-TODO.md               # bugs and enhancements tracker
 LICENSE               # MIT license
 CLAUDE.md             # this file
+dev/
+  breathe-cli-spec.md # safety constraints and acceptance tests
+  TODO.md             # bugs and enhancements tracker
+  AAR.md              # after action reviews
+  NEXT-SESSION.md     # session continuity notes
 ```

@@ -220,7 +220,7 @@ Automated tests cover logic and arithmetic (formatting, ratio parsing, safety re
 python3 -m unittest test_breathe -v
 ```
 
-TUI behaviour (rendering, animation, terminal restoration) is covered by 25 manual acceptance tests in `breathe-cli-spec.md`.
+TUI behaviour (rendering, animation, terminal restoration) is covered by 25 manual acceptance tests in `dev/breathe-cli-spec.md`.
 
 ## Safety
 

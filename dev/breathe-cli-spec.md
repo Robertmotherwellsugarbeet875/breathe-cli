@@ -16,7 +16,7 @@ This document preserves the safety constraints and acceptance tests for
 to keep the non-negotiable safety rationale and the manual test suite in
 one place where they won't be eroded by incremental changes.
 
-For implementation constraints, see `CLAUDE.md`.
+For implementation constraints, see `../CLAUDE.md`.
 
 ## 2. Safety constraints
 

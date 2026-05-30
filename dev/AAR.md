@@ -79,3 +79,19 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 - When a bug survives multiple fix attempts, stop and instrument — add debug logging and observe actual values instead of reasoning from code alone
 - Always ship tests with code changes, never as a follow-up
 - When using replace_all, grep for collateral matches first
+
+## 2026-05-30 — Science, functional presets, safety, publishing (v1.8)
+
+**What went well:**
+- Literature review was thorough — verified all 6 DOIs against PubMed before adding citations, caught that the README was attributing the O2 sat claim to the wrong Bernardi paper (2002 instead of 1998)
+- Preset rename (morning→balanced, evening→calm, long→extended) was clean — replace_all across files with no collateral damage, all 44 tests passed immediately
+- The exhale ratio cap (≤2x inhale) emerged naturally from reviewing the science — a safety constraint grounded in evidence, not speculation
+- Resonance frequency measurement protocol is concrete and actionable — specific hardware, step-by-step procedure, exact commands
+
+**What didn't go well:**
+- Hit 701 lines with the disclaimer and had to trim — the 700-line cap is now fully consumed with zero margin
+- Didn't anticipate that `gh repo create` would fail on an existing `origin` remote — minor, but added a manual step
+
+**What we'll do differently:**
+- Before adding any feature, check available line budget first and flag if it requires trimming
+- When creating a new GitHub repo from an existing local repo, check the current remote setup before running `gh repo create`
