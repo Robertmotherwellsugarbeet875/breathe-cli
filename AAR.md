@@ -45,3 +45,19 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 **What we'll do differently:**
 - For TUI changes, always ask the user to run and visually verify — never attempt programmatic terminal capture (already saved to memory)
 - When a feature requires breaking out of multiple loop levels with flags, treat that as a design smell and consider restructuring first
+
+## 2026-05-30 — Bug fix round (#6, #10, #12), audio refactor, spec slimdown (v1.6)
+
+**What went well:**
+- Bug investigation was efficient — read the code, identified root causes from structure (stale frame on `continue`, `int()` truncation, missing final render), fixed with minimal changes
+- Sound debugging was systematic — tested both audio backends independently, quickly isolated AudioToolbox as the silent failure, swapped priority
+- Refactoring removed 65 lines (711→646) by dropping dead code (AudioToolbox) rather than cosmetic compaction — the right kind of line reduction
+- Spec slimdown was overdue and landed well — 785→108 lines, keeping only the load-bearing parts (safety constraints, acceptance tests)
+
+**What didn't go well:**
+- Didn't flag the spec's post-hoc drift proactively — the user had to ask "what's the value of keeping this?" before I surfaced it
+- After slimming the spec, missed stale cross-references in CLAUDE.md until explicitly asked to check other documents
+
+**What we'll do differently:**
+- After any structural change, proactively scan all docs for stale references and coordination issues
+- When a document is being maintained post-hoc rather than driving work, flag that to the user as a potential simplification opportunity
