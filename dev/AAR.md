@@ -95,3 +95,20 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 **What we'll do differently:**
 - Before adding any feature, check available line budget first and flag if it requires trimming
 - When creating a new GitHub repo from an existing local repo, check the current remote setup before running `gh repo create`
+
+## 2026-05-30 — Social card, repo description, Medium draft
+
+**What went well:**
+- Caught the `sharp`/Mojave crash diagnosis quickly — identified the `_aligned_alloc` symbol as a macOS 10.15+ dependency, avoided image processing paths for the rest of the session
+- Social card workflow was efficient — resize + crop with ImageMagick guided by vision, imgcrush for compression, all in a few steps
+- Caught the `_config.yml` description mistake in time — short tagline is right for repo description but wrong for Pages SEO meta
+
+**What didn't go well:**
+- Deleted `social-card.png` before the user was done with it — had to re-export from HTML. Should have asked before cleaning up an asset that wasn't committed
+- Changed the Jekyll description without thinking through the different purposes of repo description vs. Pages meta description — user had to catch this
+- Previous session crashed (dyld/sharp incompatibility on Mojave) and all conversation context was lost. Important decisions and state that existed only in context disappeared with it
+
+**What we'll do differently:**
+- Don't delete untracked assets until the user confirms they're fully done with them — "clean up" should mean "remove what's confirmed unnecessary," not "remove all untracked files"
+- When the same text (description, title) appears in multiple places, consider whether each instance serves a different audience before making them identical
+- Treat context as perishable: commit work frequently, update NEXT-SESSION.md and TODO.md as decisions are made (not just at session close), and write important state to files immediately rather than holding it in conversation

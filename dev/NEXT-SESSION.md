@@ -1,6 +1,6 @@
 # Next Session
 
-v1.8 shipped: science section, functional presets (balanced/calm/extended), exhale ratio cap, resonance frequency measurement protocol, medical disclaimer, MIT license. Currently 700 lines (at the hard cap).
+v1.8 shipped. Currently 700 lines (at the hard cap).
 
 ## Open items
 
@@ -10,6 +10,10 @@ v1.8 shipped: science section, functional presets (balanced/calm/extended), exha
 
 ## Publishing
 
-Done: repo, description, topics, tag, release, GitHub Pages, Google Search Console, social card, Homebrew tap, PyPI. HN post submitted but auto-flagged; emailed hn@ycombinator.com (2026-05-30).
+Done: repo, description, topics, tag, release, GitHub Pages, Google Search Console, social card (1200×630, uploaded to GitHub settings), Jekyll `og:image`, Homebrew tap, PyPI. HN post submitted but auto-flagged; emailed hn@ycombinator.com (2026-05-30).
 
 Remaining: awesome list submissions (need 30+ stars first), Reddit posts, ORCID link, Zenodo DOI. See `PUBLISH.taskpaper` (gitignored, local only) for the full checklist.
+
+## Medium post
+
+Draft at `dev/medium-post-draft.md` — "The Market of One" using Goldratt's six questions. Ready for review and publishing.
