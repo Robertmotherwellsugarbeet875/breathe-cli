@@ -1,4 +1,4 @@
 title: "Breathe CLI — Paced Resonance Breathing"
-description: "Paced resonance breathing in your terminal"
+description: "Terminal app for vagal tone training. Single-file Python, no dependencies. Grounded in CHF clinical trials (Bernardi, Vaschillo, Lehrer). macOS."
 image: /social-card.png
 theme: jekyll-theme-minimal
