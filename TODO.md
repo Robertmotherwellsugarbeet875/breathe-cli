@@ -49,6 +49,15 @@ Replaced triple-nested render loop with flat state machine
 Countdown tracks completed breathing time only. Pause indicator
 changed from ⏸ to ‖ (U+2016) to fix bracket shift.
 
+### 13. Countdown desyncs from cycle boundaries on pause/resume
+When pausing and resuming during a session, the countdown timer in the
+header doesn't properly snap back to a round cycle boundary (multiples
+of cycle_s). It shows 00:00 well before the progress bar fills and the
+session actually completes. After resume, the countdown should reset to
+`duration_s - breathing_base` (a clean multiple of cycle_s), but
+`elapsed_display` appears to drift from the cycle grid across
+pause/resume transitions.
+
 ### 8. Session progress bar (cycle count)
 Add a second horizontal bar below the breath bar that tracks
 cycle-count progress (completed cycles / total expected cycles).

@@ -51,6 +51,7 @@ ANSI_GREEN    = '\033[32m'
 ANSI_CLR_LINE = '\033[K'
 
 INHALE, EXHALE, PAUSED = 'INHALE', 'EXHALE', 'PAUSED'
+PHASE_LABEL = {INHALE: 'IN', EXHALE: 'OUT'}
 
 SAFETY_TEXT = """\
 Breathe CLI \u2014 safety notes
@@ -102,6 +103,7 @@ class Layout:
     header_row: int
     phase_row: int
     bar_row: int
+    progress_row: int
     footer_row: int
     minimal: bool
     use_colour: bool
@@ -136,7 +138,8 @@ def compute_layout():
         header_row=max(mid - 4, 1),
         phase_row=max(mid - 1, 3),
         bar_row=max(mid + 1, 5),
-        footer_row=min(mid + 4, h),
+        progress_row=max(mid + 3, 7),
+        footer_row=min(mid + 5, h),
         minimal=minimal,
         use_colour=supports_colour(),
         use_unicode=supports_unicode(),
@@ -219,15 +222,16 @@ def draw_header(layout, config, elapsed, paused, muted):
 def draw_phase(layout, phase):
     move_to(layout.phase_row, 1)
     sys.stdout.write(ANSI_CLR_LINE)
+    label = PHASE_LABEL.get(phase, phase)
     if layout.use_colour:
         colour = ANSI_CYAN if phase == INHALE else ANSI_GREEN
-        styled = colour + phase + ANSI_RESET
+        styled = colour + label + ANSI_RESET
     else:
-        styled = phase
+        styled = label
     if layout.minimal:
         sys.stdout.write('  ' + styled)
     else:
-        pad = (layout.width - len(phase)) // 2
+        pad = (layout.width - len(label)) // 2
         sys.stdout.write(' ' * pad + styled)
 
 def draw_bar(layout, progress, phase):
@@ -249,6 +253,25 @@ def draw_bar(layout, progress, phase):
         pad = (layout.width - BAR_WIDTH) // 2
         sys.stdout.write(' ' * pad + bar)
 
+def draw_progress(layout, config, elapsed):
+    move_to(layout.progress_row, 1)
+    sys.stdout.write(ANSI_CLR_LINE)
+    frac = min(1.0, elapsed / config.duration_s) if config.duration_s > 0 else 1.0
+    filled = round(frac * BAR_WIDTH)
+    filled = max(0, min(BAR_WIDTH, filled))
+    empty = BAR_WIDTH - filled
+    if layout.use_unicode:
+        bar = '\u2501' * filled + '\u2500' * empty
+    else:
+        bar = '=' * filled + '-' * empty
+    if layout.use_colour:
+        bar = ANSI_DIM + bar + ANSI_RESET
+    if layout.minimal:
+        sys.stdout.write('  ' + bar)
+    else:
+        pad = (layout.width - BAR_WIDTH) // 2
+        sys.stdout.write(' ' * pad + bar)
+
 def draw_footer(layout, paused):
     move_to(layout.footer_row, 1)
     sys.stdout.write(ANSI_CLR_LINE)
@@ -264,6 +287,7 @@ def render_frame(layout, config, elapsed, phase, progress, paused, muted):
     draw_header(layout, config, elapsed, paused, muted)
     draw_phase(layout, phase)
     draw_bar(layout, progress, phase)
+    draw_progress(layout, config, elapsed)
     draw_footer(layout, paused)
     sys.stdout.flush()
 
