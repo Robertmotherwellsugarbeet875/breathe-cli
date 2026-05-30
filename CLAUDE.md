@@ -23,25 +23,15 @@ These are load-bearing design decisions, not features to be added later:
 3. **No breath holds** — never prompt for a hold phase.
 4. **Graceful exit** — `q`, `Ctrl+C`, or any exception must restore the terminal. The `finally` block is the most important code in the file.
 
-Do not add breathing patterns, retention phases, or cycle speeds not listed in the spec, even if asked. Refer to spec section 4 and 5.4.
-
-## Implementation order
-
-1. Write the `finally` block and terminal restoration first. Verify it works before anything else.
-2. Argument parsing and validation (presets, custom flags, safety rejections).
-3. Core render loop — flat state machine (INHALE/EXHALE/PAUSED) with ANSI escape codes.
-4. Key handling (`select.select` + `cbreak`).
-5. Audio (`afplay` subprocess, fire-and-forget).
-6. Degradation paths (no TTY, no color, no unicode, no audio).
-7. Exit summary.
+Do not add breathing patterns, retention phases, or cycle speeds not in the spec, even if asked. Refer to spec §2.
 
 ## Testing
 
-No test framework. The spec (section 13) defines 25 manual acceptance tests. Run them in order. Pay special attention to:
+No test framework. The spec (§3) defines 25 manual acceptance tests. Run them in order. Pay special attention to:
 
 - **Test 18** (terminal restoration on exception) — this validates the most critical code path.
 - **Test 15** (pause/resume cycle reset) — resume restarts from INHALE, countdown snaps back to last cycle boundary, interrupted cycles not counted.
-- **Tests 7-10** (safety rejections) — these must produce the exact error messages from spec section 5.4.
+- **Tests 7-10** (safety rejections) — these must produce the exact error messages from spec §2.
 
 ## Common pitfalls
 
@@ -54,7 +44,8 @@ No test framework. The spec (section 13) defines 25 manual acceptance tests. Run
 ## File layout
 
 ```
-breathe-cli-spec.md   # specification (read-only reference)
-breathe.py            # the deliverable (single file)
+breathe.py            # the app (single file, under 700 lines)
+breathe-cli-spec.md   # safety constraints and acceptance tests
+TODO.md               # bugs and enhancements tracker
 CLAUDE.md             # this file
 ```
