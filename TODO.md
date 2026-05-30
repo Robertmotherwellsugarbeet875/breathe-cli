@@ -27,18 +27,13 @@ Append-only CSV at `~/.breathe_log.csv`. Spec §5.7. Flags:
 Usage docs, clinical rationale (Bernardi, RSA, HFrEF), design
 choices, presets/flags/runtime keys, session logging, safety.
 
-### 4. Session progress bar (time-based)
-Add a second horizontal bar below the breath bar that shows overall
-session progress (elapsed / total duration). Same width as the breath
-bar. Needs careful design to avoid cluttering the minimal interface —
-should be visually distinct (e.g. dimmed, different character) so it
-doesn't compete with the breath bar for attention. Requires adjusting
-the layout row calculations.
+### ~~4. Session progress bar (time-based)~~ DONE (v1.6)
+Dimmed thin bar (`━`/`─`) below the breath bar, fills based on
+`elapsed / duration_s`. Separate `progress_row` in layout.
 
-### 5. Shorter phase labels
-Change `INHALE` / `EXHALE` to `IN` / `OUT`. Quieter, less clinical,
-matches the minimal aesthetic. Verify the horizontal centering still
-looks right with the shorter strings.
+### ~~5. Shorter phase labels~~ DONE (v1.6)
+`INHALE`/`EXHALE` → `IN`/`OUT` via `PHASE_LABEL` map. Centering
+uses label length, not state constant length.
 
 ### ~~7. Replace count-up timer with countdown~~ DONE (v1.4)
 Header now shows remaining time counting down instead of elapsed/total.
