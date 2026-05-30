@@ -1,0 +1,62 @@
+Breathe CLI — Publishing Checklist:
+
+Commit and tag:
+	- Commit all pending changes (v1.8: science, functional presets, disclaimer, MIT license) @priority(1)
+	- Create annotated tag: git tag -a v1.8 -m "v1.8: science section, functional presets, safety disclaimer, MIT license" @priority(1)
+
+Create GitHub repo:
+	- Create public repo: gh repo create breathe-cli --public --source=. --push @priority(1)
+		Pick the repo name carefully — "breathe" may be taken. "breathe-cli" is safer.
+	- Set description: gh repo edit --description "Paced resonance breathing for vagal tone training. Terminal app, single file, no dependencies." @priority(1)
+	- Set topics: gh repo edit --add-topic breathing,hrv,heart-rate-variability,vagal-tone,biofeedback,cli,terminal,macos,heart-failure,resonance-breathing,health @priority(1)
+
+GitHub release:
+	- Push tag: git push origin v1.8 @priority(1)
+	- Create release: gh release create v1.8 --title "v1.8 — Science & Safety" --notes "Added clinical literature review, functional preset names (balanced/calm/extended), resonance frequency measurement protocol, exhale ratio safety check, medical disclaimer, MIT license." @priority(1)
+
+GitHub Pages:
+	- Go to repo Settings > Pages > Source: Deploy from a branch > Branch: main, folder: / (root) > Save @priority(2)
+		The README renders as the landing page automatically. No extra files needed.
+
+Homebrew tap:
+	- Create a new public repo: mkowalczyk/homebrew-breathe (or your GitHub username) @priority(3)
+	- Add a formula file Formula/breathe.rb — example: @priority(3)
+		class Breathe < Formula
+		  desc "Paced resonance breathing for vagal tone training"
+		  homepage "https://github.com/YOURUSER/breathe-cli"
+		  url "https://github.com/YOURUSER/breathe-cli/archive/refs/tags/v1.8.tar.gz"
+		  sha256 "FILL_AFTER_RELEASE"
+		  license "MIT"
+		  depends_on "python@3"
+		  def install; bin.install "breathe.py" => "breathe"; end
+		  test do; system "#{bin}/breathe", "--version"; end
+		end
+	- Users install with: brew tap YOURUSER/breathe && brew install breathe @priority(3)
+
+PyPI (pip install):
+	- Create a minimal pyproject.toml (project name "breathe-cli", entry point "breathe") @priority(3)
+		Check that "breathe-cli" is not already taken on pypi.org.
+	- Build: python3 -m build @priority(3)
+	- Upload: python3 -m twine upload dist/* @priority(3)
+		Requires a PyPI account and API token.
+
+Awesome lists — submit pull requests:
+	- awesome-cli-apps: https://github.com/agarrharr/awesome-cli-apps @priority(4)
+		Category: Health / Medical or Utilities. Include one-line description and link.
+	- awesome-macos-command-line: https://github.com/herrbischoff/awesome-macos-command-line @priority(4)
+	- awesome-health: https://github.com/kakoni/awesome-healthcare @priority(4)
+		Note: most awesome lists require the repo to have 30+ stars before accepting submissions. Build momentum first.
+
+Community posts:
+	- Show HN (news.ycombinator.com/submit) @priority(4)
+		Title: "Show HN: Breathe CLI — paced resonance breathing in the terminal"
+		Hook: single-file Python, no deps, grounded in CHF clinical trials, safety-first design.
+		Best time to post: weekday morning US time (10–11am ET).
+	- Reddit r/commandline @priority(4)
+	- Reddit r/quantifiedself @priority(4)
+	- Reddit r/HeartFailure or r/cardiology — frame as a patient sharing a tool, not promotion @priority(4)
+
+Optional — social / academic:
+	- Link the repo from your ORCID profile (Works > Add > Software) @priority(5)
+	- Consider registering a DOI via Zenodo (connects to GitHub, auto-archives releases) @priority(5)
+		This makes the software citable in academic papers.

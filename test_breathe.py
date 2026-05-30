@@ -41,11 +41,11 @@ class TestFormatHuman(unittest.TestCase):
 
 class TestConfigRatioStr(unittest.TestCase):
     def test_ratio_str(self):
-        c = breathe.Config(600, 5, 5, 'morning', True, False)
+        c = breathe.Config(600, 5, 5, 'balanced', True, False)
         self.assertEqual(c.ratio_str, '5-5')
 
     def test_ratio_str_asymmetric(self):
-        c = breathe.Config(900, 4, 6, 'evening', True, False)
+        c = breathe.Config(900, 4, 6, 'calm', True, False)
         self.assertEqual(c.ratio_str, '4-6')
 
 
@@ -110,6 +110,22 @@ class TestParseRatio(unittest.TestCase):
         with self.assertRaises(SystemExit):
             breathe.parse_ratio('5-11')  # exhale > 10
 
+    def test_extreme_ratio_rejected(self):
+        with self.assertRaises(SystemExit):
+            breathe.parse_ratio('3-7')  # exhale > 2x inhale
+        with self.assertRaises(SystemExit):
+            breathe.parse_ratio('3-10')
+        with self.assertRaises(SystemExit):
+            breathe.parse_ratio('4-9')
+        with self.assertRaises(SystemExit):
+            breathe.parse_ratio('4-10')
+
+    def test_moderate_ratio_accepted(self):
+        self.assertEqual(breathe.parse_ratio('4-8'), (4, 8))  # exhale == 2x inhale
+        self.assertEqual(breathe.parse_ratio('5-10'), (5, 10))
+        self.assertEqual(breathe.parse_ratio('5-7'), (5, 7))
+        self.assertEqual(breathe.parse_ratio('3-6'), (3, 6))  # exactly 2x
+
     def test_non_numeric_rejected(self):
         with self.assertRaises(SystemExit):
             breathe.parse_ratio('foo')
@@ -121,14 +137,14 @@ class TestParseRatio(unittest.TestCase):
 
 class TestCompletion(unittest.TestCase):
     def test_completed(self):
-        c = breathe.Config(600, 5, 5, 'morning', True, False)
+        c = breathe.Config(600, 5, 5, 'balanced', True, False)
         r = breathe.Result(breaths=60, elapsed=600.0, completed=True)
         pct, status = breathe._completion(c, r)
         self.assertEqual(pct, 100)
         self.assertEqual(status, 'completed')
 
     def test_aborted_partial(self):
-        c = breathe.Config(600, 5, 5, 'morning', True, False)
+        c = breathe.Config(600, 5, 5, 'balanced', True, False)
         r = breathe.Result(breaths=30, elapsed=300.0, completed=False, aborted=True)
         pct, status = breathe._completion(c, r)
         self.assertEqual(pct, 50)
@@ -141,7 +157,7 @@ class TestCompletion(unittest.TestCase):
         self.assertEqual(pct, 100)
 
     def test_pct_capped_at_100(self):
-        c = breathe.Config(600, 5, 5, 'morning', True, False)
+        c = breathe.Config(600, 5, 5, 'balanced', True, False)
         r = breathe.Result(elapsed=650.0, completed=True)
         pct, _ = breathe._completion(c, r)
         self.assertEqual(pct, 100)
@@ -303,7 +319,7 @@ class TestDurationRounding(unittest.TestCase):
 
     def test_divisible_unchanged(self):
         """When duration divides evenly, no rounding needed."""
-        c = breathe.Config(600, 5, 5, 'morning', True, False)
+        c = breathe.Config(600, 5, 5, 'balanced', True, False)
         self.assertEqual(c.duration_s, 600)  # 600 / 10 = 60
 
     def test_indivisible_rounded_up(self):
@@ -321,6 +337,8 @@ class TestDurationRounding(unittest.TestCase):
             for exhale in range(3, 11):
                 cycle_s = inhale + exhale
                 if cycle_s < breathe.MIN_CYCLE_SECS:
+                    continue
+                if exhale > 2 * inhale:
                     continue
                 for duration_min in [1, 2, 3, 5, 10, 15, 20, 30, 60]:
                     raw = duration_min * 60

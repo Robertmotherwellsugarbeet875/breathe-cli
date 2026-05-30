@@ -3,7 +3,7 @@ title: 'Breathe CLI — Safety & Acceptance Tests'
 subtitle: 'Reference document for a paced-breathing terminal app'
 author: 'Marek Kowalczyk (spec by Claude, for Claude Opus 4.6)'
 date: 2026-05-30
-version: 1.6
+version: 1.8
 target_platform: 'macOS 10.14.6 (Mojave)'
 target_runtime: 'Python 3.7+ stdlib only'
 status: 'implementation complete — this document retains safety constraints and acceptance tests'
@@ -51,6 +51,7 @@ without having "missed" any breaths.
 | `--ratio 4-7-8` | Error: "Three-number ratios imply a breath hold. This app does not support breath retention. See `breathe --safety`." |
 | `--ratio 2-2` | Error: "Total breath cycle must be ≥ 8 seconds (no rapid breathing)." |
 | `--ratio foo` | Error: "Ratio must be in the form `inhale-exhale` (e.g. `5-5` or `4-6`)." |
+| `--ratio 3-7` | Error: "Exhale must not exceed twice the inhale (no clinical evidence for extreme ratios). See README.md for details." |
 | `--duration 0` | Error: "Duration must be 1–60 minutes." |
 | `--duration 120` | Error: "Duration must be 1–60 minutes." |
 
@@ -61,11 +62,11 @@ Manual tests, no framework required. Run in order.
 ### 3.1 Smoke tests
 
 1. `breathe --help` prints help and exits 0.
-2. `breathe --version` prints `breathe 1.6` and exits 0.
+2. `breathe --version` prints `breathe 1.8` and exits 0.
 3. `breathe --safety` prints the safety block and exits 0.
 4. `breathe --list-presets` prints the preset table and exits 0.
 5. `breathe -d 1` runs for ~60 seconds, renders breath animation, exits cleanly with `completed` status.
-6. `breathe --preset morning` starts a 10-minute 5-5 session. `Ctrl+C` during the first minute exits within 1 second and the terminal is fully usable (prompt returns on its own line, cursor visible, no leftover colour).
+6. `breathe --preset balanced` starts a 10-minute 5-5 session. `Ctrl+C` during the first minute exits within 1 second and the terminal is fully usable (prompt returns on its own line, cursor visible, no leftover colour).
 
 ### 3.2 Safety-rejection tests
 
@@ -94,9 +95,9 @@ Manual tests, no framework required. Run in order.
 ### 3.6 Time-of-day default test
 
 19. Run `breathe` with no arguments at different times of day (or mock `time.localtime`). Verify:
-    - Before noon: header shows `morning · 5-5 · 10:00 ...` (counting down)
-    - 12:00–16:59: header shows `long · 4-6 · 20:00 ...` (counting down)
-    - 17:00+: header shows `evening · 4-6 · 15:00 ...` (counting down)
+    - Before noon: header shows `balanced · 5-5 · 10:00 ...` (counting down)
+    - 12:00–16:59: header shows `extended · 4-6 · 20:00 ...` (counting down)
+    - 17:00+: header shows `calm · 4-6 · 15:00 ...` (counting down)
 
 ### 3.7 Session logging tests
 

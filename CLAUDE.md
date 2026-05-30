@@ -55,5 +55,6 @@ breathe.py            # the app (single file, under 700 lines)
 test_breathe.py       # automated tests (stdlib unittest)
 breathe-cli-spec.md   # safety constraints and acceptance tests
 TODO.md               # bugs and enhancements tracker
+LICENSE               # MIT license
 CLAUDE.md             # this file
 ```

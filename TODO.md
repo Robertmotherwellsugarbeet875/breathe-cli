@@ -23,6 +23,44 @@ selection, per-mode presets, per-mode guardrails, and updated
 safety messaging. The single-file constraint may become the
 binding limit.
 
+### 15. Personal resonance frequency (`BREATHE_BPM`)
+Allow the user to declare their individual resonance frequency so
+that presets auto-adjust. Preferred mechanism: env var
+`BREATHE_BPM=5.2` (user sets it in their shell profile; no config
+file needed, consistent with the no-config-files constraint).
+
+**Ratio computation from BPM:**
+- Target cycle = `round(60 / bpm)` seconds (integer phases only).
+- `balanced`: split evenly; if odd cycle, shorter inhale
+  (e.g. 11s → 5-6).
+- `calm`/`extended`: exhale-weighted split, maintaining
+  exhale <= 2x inhale (e.g. 12s → 4-8, 11s → 4-7).
+- Validate that the computed ratio still passes all safety checks
+  (phase bounds 3–10s, cycle >= 8s, exhale <= 2x inhale).
+  Reject with a clear error if the requested BPM produces an
+  invalid ratio.
+
+**Interaction with other flags:**
+- `--preset` + `BREATHE_BPM`: preset picks the style (balanced
+  vs exhale-weighted) and duration; BPM overrides the ratio.
+- `--ratio` + `BREATHE_BPM`: explicit `--ratio` wins (user
+  override). Print a note: "Using explicit ratio; ignoring
+  BREATHE_BPM."
+- `--preset` + `--ratio`: already rejected; no change.
+
+**Line budget:** ~30–40 lines for the env var read, validation,
+ratio computation, and preset adjustment. Current file is 694
+lines (cap 700). Requires a line-trimming pass first, or raising
+the cap.
+
+**Caveats:**
+- Integer-only phase durations mean not every BPM maps cleanly.
+  4.8 bpm → 12.5s cycle → rounds to 12s (5.0 bpm). Document
+  this: "actual BPM may differ slightly from requested."
+- The resonance frequency finding protocol (README) should
+  recommend testing at rates the app can actually represent
+  (whole-second ratios), not arbitrary decimal BPMs.
+
 ## Done
 
 ### ~~13. Countdown hits 00:00 one exhale-phase early~~ FIXED (v1.7)

@@ -15,16 +15,17 @@ from dataclasses import dataclass
 
 # ── Constants ────────────────────────────────────────────────────────
 
-VERSION = '1.7'
+VERSION = '1.8'
 
 PRESETS = {
-    'morning': {'duration_min': 10, 'inhale_s': 5, 'exhale_s': 5},
-    'evening': {'duration_min': 15, 'inhale_s': 4, 'exhale_s': 6},
-    'long':    {'duration_min': 20, 'inhale_s': 4, 'exhale_s': 6},
+    'balanced': {'duration_min': 10, 'inhale_s': 5, 'exhale_s': 5},
+    'calm': {'duration_min': 15, 'inhale_s': 4, 'exhale_s': 6},
+    'extended':    {'duration_min': 20, 'inhale_s': 4, 'exhale_s': 6},
 }
 
-PRESET_DESCRIPTIONS = {'morning': 'Daily baseline', 'evening': 'Sympathetic wind-down',
-                       'long': 'Full dose, Bernardi protocol'}
+PRESET_DESCRIPTIONS = {'balanced': 'Equal ratio, neutral baseline',
+                       'calm': 'Exhale-weighted, parasympathetic emphasis',
+                       'extended': 'Full dose, Bernardi protocol'}
 
 SOUND_INHALE = '/System/Library/Sounds/Tink.aiff'
 SOUND_EXHALE = '/System/Library/Sounds/Pop.aiff'
@@ -74,14 +75,22 @@ This app deliberately does NOT support:
   \u2022 Rapid breathing (kapalbhati, bhastrika, Wim Hof patterns)
   \u2022 Total breath cycles shorter than 8 seconds
 
-Press q or Ctrl+C to end any session. Exit is always immediate."""
+Press q or Ctrl+C to end any session. Exit is always immediate.
+
+DISCLAIMER: This app is not a medical device. It does not diagnose,
+treat, or prevent any condition. Consult your physician before starting
+a breathing practice, especially with a cardiac or respiratory condition.
+Use at your own risk. The author assumes no liability for any adverse
+effects. By using this app you acknowledge and accept these terms.
+
+For the clinical evidence behind these constraints, see README.md."""
 
 @dataclass
 class Config:
     duration_s: int
     inhale_s: int
     exhale_s: int
-    preset_name: str       # 'morning', 'evening', 'long', or 'custom'
+    preset_name: str       # 'balanced', 'calm', 'extended', or 'custom'
     sound_enabled: bool
     quiet: bool
 
@@ -567,13 +576,16 @@ def parse_ratio(ratio_str):
         _die('Inhale must be 3\u201310 seconds.')
     if not (3 <= exhale <= 10):
         _die('Exhale must be 3\u201310 seconds.')
+    if exhale > 2 * inhale:
+        _die('Exhale must not exceed twice the inhale (no clinical evidence'
+             ' for extreme ratios). See README.md for details.')
     return inhale, exhale
 
 def build_parser():
     parser = argparse.ArgumentParser(
         prog='breathe',
         description='Paced breathing for HFrEF vagal training.',
-        epilog='Example: breathe --preset morning',
+        epilog='Example: breathe --preset balanced',
     )
     parser.add_argument('--version', action='version',
                         version='breathe {}'.format(VERSION))
@@ -582,7 +594,7 @@ def build_parser():
     parser.add_argument('--list-presets', action='store_true',
                         help='Show available presets and exit')
     parser.add_argument('--preset', '-p', choices=list(PRESETS.keys()),
-                        help='Use a named preset (morning, evening, long)')
+                        help='Use a named preset (balanced, calm, extended)')
     parser.add_argument('--duration', '-d', type=int, metavar='MINUTES',
                         help='Session duration in minutes (1\u201360, default: 10)')
     parser.add_argument('--ratio', '-r', metavar='IN-EX',
@@ -637,11 +649,11 @@ def main():
         # No args: auto-select preset by time of day
         hour = time.localtime().tm_hour
         if hour < 12:
-            preset_name = 'morning'
+            preset_name = 'balanced'
         elif hour < 17:
-            preset_name = 'long'
+            preset_name = 'extended'
         else:
-            preset_name = 'evening'
+            preset_name = 'calm'
         p = PRESETS[preset_name]
         inhale_s, exhale_s = p['inhale_s'], p['exhale_s']
         duration_min = p['duration_min']
