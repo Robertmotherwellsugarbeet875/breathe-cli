@@ -2,7 +2,6 @@
 """Breathe CLI — paced breathing for HFrEF vagal training. macOS only."""
 
 import argparse
-import ctypes
 import os
 import select
 import signal
@@ -143,79 +142,18 @@ def compute_layout():
         use_unicode=supports_unicode(),
     )
 
-class _SystemSoundPlayer:
-    """AudioToolbox ctypes player — near-zero latency, no NSRunLoop."""
-
-    def __init__(self):
-        self._at = ctypes.cdll.LoadLibrary(
-            '/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox')
-        self._cf = ctypes.cdll.LoadLibrary(
-            '/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation')
-        vp, cp, u32 = ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32
-        self._cf.CFStringCreateWithCString.restype = vp
-        self._cf.CFStringCreateWithCString.argtypes = [vp, cp, u32]
-        self._cf.CFURLCreateWithFileSystemPath.restype = vp
-        self._cf.CFURLCreateWithFileSystemPath.argtypes = [vp, vp, ctypes.c_int32, ctypes.c_bool]
-        self._at.AudioServicesCreateSystemSoundID.argtypes = [vp, ctypes.POINTER(u32)]
-        self._at.AudioServicesCreateSystemSoundID.restype = ctypes.c_int32
-        self._at.AudioServicesPlaySystemSound.argtypes = [u32]
-        self._at.AudioServicesPlaySystemSound.restype = None
-        self._ids = {}
-        for phase, path in [(INHALE, SOUND_INHALE), (EXHALE, SOUND_EXHALE)]:
-            if not os.path.isfile(path):
-                raise OSError('missing: ' + path)
-            sid = self._register(path)
-            if sid is None:
-                raise OSError('AudioServices failed: ' + path)
-            self._ids[phase] = sid
-
-    def _register(self, path):
-        kUTF8 = 0x08000100
-        cf_str = self._cf.CFStringCreateWithCString(
-            None, path.encode('utf-8'), kUTF8)
-        if not cf_str:
-            return None
-        cf_url = self._cf.CFURLCreateWithFileSystemPath(
-            None, cf_str, 0, False)  # 0 = kCFURLPOSIXPathStyle
-        if not cf_url:
-            return None
-        sound_id = ctypes.c_uint32(0)
-        err = self._at.AudioServicesCreateSystemSoundID(
-            cf_url, ctypes.byref(sound_id))
-        if err != 0:
-            return None
-        return sound_id.value
-
-    def play(self, phase):
-        sid = self._ids.get(phase)
-        if sid is not None:
-            self._at.AudioServicesPlaySystemSound(sid)
-
-_sys_sound_player = None  # set by check_audio()
-
 def check_audio(quiet):
-    """Init audio subsystem. Returns 'afplay', 'system', 'bell'."""
-    global _sys_sound_player
-    # Prefer afplay: reliable on all macOS versions including Mojave,
-    # where AudioServicesPlaySystemSound can silently fail from a CLI
-    # process without a run loop.
+    """Init audio subsystem. Returns 'afplay' or 'bell'."""
     if (os.path.isfile(AFPLAY) and os.access(AFPLAY, os.X_OK)
             and os.path.isfile(SOUND_INHALE)
             and os.path.isfile(SOUND_EXHALE)):
         return 'afplay'
-    try:
-        _sys_sound_player = _SystemSoundPlayer()
-        return 'system'
-    except (OSError, AttributeError, TypeError):
-        pass
     if not quiet:
         sys.stderr.write('audio unavailable: falling back to terminal bell\n')
     return 'bell'
 
 def play_sound(phase, audio_mode):
-    if audio_mode == 'system':
-        _sys_sound_player.play(phase)
-    elif audio_mode == 'afplay':
+    if audio_mode == 'afplay':
         path = SOUND_INHALE if phase == INHALE else SOUND_EXHALE
         try:
             subprocess.Popen(
@@ -511,17 +449,15 @@ def run_session(config, result):
         restore_tty(old_termios)
         signal.signal(signal.SIGINT, old_sigint)
 
-def print_summary(config, result):
-    if config.preset_name != 'custom':
-        target = '{} min ({} preset, {})'.format(
-            config.duration_s // 60, config.preset_name, config.ratio_str)
-    else:
-        target = '{} min (custom, {})'.format(
-            config.duration_s // 60, config.ratio_str)
-
+def _completion(config, result):
     pct = min(100, int(result.elapsed / config.duration_s * 100)) if config.duration_s > 0 else 100
     status = 'completed' if result.completed else 'ended early (user)'
+    return pct, status
 
+def print_summary(config, result):
+    label = config.preset_name if config.preset_name != 'custom' else 'custom'
+    target = '{} min ({}, {})'.format(config.duration_s // 60, label, config.ratio_str)
+    pct, status = _completion(config, result)
     print('Session summary')
     print('\u2500' * 15)
     print('Target:    {}'.format(target))
@@ -536,8 +472,7 @@ def log_session(config, result, session_start_time):
         with open(LOG_FILE, 'a') as f:
             if write_header:
                 f.write(LOG_HEADER + '\n')
-            pct = min(100, int(result.elapsed / config.duration_s * 100)) if config.duration_s > 0 else 100
-            status = 'completed' if result.completed else 'ended early (user)'
+            pct, status = _completion(config, result)
             row = '{},{},{},{},{},{},{},{},{}'.format(
                 time.strftime('%Y-%m-%d', session_start_time),
                 time.strftime('%H:%M:%S', session_start_time),
