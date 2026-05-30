@@ -24,9 +24,9 @@ This app is a habit tool that makes daily practice frictionless: open terminal, 
 
 ### Key references
 
-- Bernardi L, Porta C, Spicuzza L, et al. "Slow breathing increases arterial baroreflex sensitivity in patients with chronic heart failure." *Circulation*. 2002;105(2):143-145.
-- Bernardi L, Sleight P, Bandinelli G, et al. "Effect of rosary prayer and yoga mantras on autonomic cardiovascular rhythms." *BMJ*. 2001;323:1446.
-- Lehrer PM, Gevirtz R. "Heart rate variability biofeedback: how and why does it work?" *Front Psychol*. 2014;5:756.
+- Bernardi L, Porta C, Spicuzza L, et al. ["Slow breathing increases arterial baroreflex sensitivity in patients with chronic heart failure."](https://doi.org/10.1161/hc0202.103311) *Circulation*. 2002;105(2):143-145.
+- Bernardi L, Sleight P, Bandinelli G, et al. ["Effect of rosary prayer and yoga mantras on autonomic cardiovascular rhythms."](https://doi.org/10.1136/bmj.323.7327.1446) *BMJ*. 2001;323:1446.
+- Lehrer PM, Gevirtz R. ["Heart rate variability biofeedback: how and why does it work?"](https://doi.org/10.3389/fpsyg.2014.00756) *Front Psychol*. 2014;5:756.
 
 ## Design choices
 
