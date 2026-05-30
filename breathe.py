@@ -201,7 +201,7 @@ def poll_key():
 def move_to(row, col):
     sys.stdout.write('\033[{};{}H'.format(row, col))
 
-def draw_header(layout, config, elapsed, paused, muted):
+def draw_header(layout, config, remaining_s, paused, muted):
     move_to(layout.header_row, 1)
     sys.stdout.write(ANSI_CLR_LINE)
     parts = []
@@ -214,7 +214,7 @@ def draw_header(layout, config, elapsed, paused, muted):
     indicator = ' '.join(parts)
     line = '  {} \u00b7 {} \u00b7 {}   [{}]'.format(
         config.preset_name, config.ratio_str,
-        format_mmss(max(0, config.duration_s - elapsed)),
+        format_mmss(remaining_s),
         indicator,
     )
     sys.stdout.write(line)
@@ -283,8 +283,9 @@ def draw_footer(layout, paused):
         text = ANSI_DIM + text + ANSI_RESET
     sys.stdout.write('  ' + text)
 
-def render_frame(layout, config, elapsed, phase, progress, paused, muted):
-    draw_header(layout, config, elapsed, paused, muted)
+def render_frame(layout, config, elapsed, remaining_s, phase, progress,
+                 paused, muted):
+    draw_header(layout, config, remaining_s, paused, muted)
     draw_phase(layout, phase)
     draw_bar(layout, progress, phase)
     draw_progress(layout, config, elapsed)
@@ -309,7 +310,7 @@ def run_countdown(layout, config):
         else:
             pad = (layout.width - len(label)) // 2
             sys.stdout.write(' ' * pad + label)
-        draw_header(layout, config, 0.0, False, False)
+        draw_header(layout, config, config.duration_s, False, False)
         draw_bar(layout, 0.0, INHALE)
         draw_footer(layout, False)
         sys.stdout.flush()
@@ -382,21 +383,24 @@ def run_session(config, result):
                     break
                 elif key == ' ':
                     if breathing_base >= config.duration_s:
-                        render_frame(layout, config, config.duration_s,
+                        render_frame(layout, config, config.duration_s, 0,
                                      EXHALE, 1.0, False, muted)
                         time.sleep(0.4)
                         result.completed = True
                         break
                     state = INHALE
-                    phase_start_wall = time.monotonic()
+                    phase_start_wall = now
                     if not muted and audio_mode != 'none':
                         play_sound(INHALE, audio_mode)
                 elif key == 's':
                     muted = not muted
-                render_frame(layout, config, paused_elapsed, paused_phase,
-                             paused_progress, True, muted)
-                time.sleep(FRAME_SLEEP)
-                continue
+                if state == PAUSED:
+                    render_frame(layout, config, paused_elapsed,
+                                 paused_remaining, paused_phase,
+                                 paused_progress, True, muted)
+                    time.sleep(FRAME_SLEEP)
+                    continue
+                # Resume: fall through to active code
 
             # ── INHALE / EXHALE ─────────────────────────────
             if _abort[0]:
@@ -419,7 +423,7 @@ def run_session(config, result):
                     result.breaths += 1
                     breathing_base = result.breaths * cycle_s
                     if breathing_base >= config.duration_s:
-                        render_frame(layout, config, config.duration_s,
+                        render_frame(layout, config, config.duration_s, 0,
                                      EXHALE, 1.0, False, muted)
                         time.sleep(0.4)
                         result.completed = True
@@ -436,12 +440,16 @@ def run_session(config, result):
                 phase_elapsed = now - phase_start_wall
                 progress = phase_elapsed / phase_dur
 
-            # Smooth countdown: breathing_base + time into cycle
+            # Smooth elapsed for progress bar; integer seconds for countdown
             if state == INHALE:
                 elapsed_display = breathing_base + phase_elapsed
+                remaining_s = (config.duration_s - breathing_base
+                               - int(phase_elapsed))
             else:
                 elapsed_display = (breathing_base + config.inhale_s
                                    + phase_elapsed)
+                remaining_s = (config.duration_s - breathing_base
+                               - config.inhale_s - int(phase_elapsed))
 
             key = poll_key()
             if key == 'q':
@@ -451,16 +459,18 @@ def run_session(config, result):
                 paused_phase = state
                 paused_progress = progress
                 paused_elapsed = elapsed_display
+                paused_remaining = remaining_s
                 state = PAUSED
-                render_frame(layout, config, paused_elapsed, paused_phase,
+                render_frame(layout, config, paused_elapsed,
+                             paused_remaining, paused_phase,
                              paused_progress, True, muted)
                 time.sleep(FRAME_SLEEP)
                 continue
             elif key == 's':
                 muted = not muted
 
-            render_frame(layout, config, elapsed_display, state,
-                         progress, False, muted)
+            render_frame(layout, config, elapsed_display, remaining_s,
+                         state, progress, False, muted)
             time.sleep(FRAME_SLEEP)
 
         result.elapsed = breathing_base
