@@ -22,6 +22,10 @@ The countdown reaches 00:00 before the bar completes its final exhale —
 the timer and bar fall out of sync in the last cycle. Minor visual
 annoyance, not a logic bug.
 
+### ~~12. Inhale bar never reaches full scale~~ FIXED
+`int()` truncated the last fractional segment — `int(0.98 * 30) = 29`.
+Switched to `round()` so near-full progress maps to a full bar.
+
 ### ~~6. Sound cues play in wrong location~~ FIXED
 Phase transition hit `continue` before rendering, so the sound fired
 while the screen still showed the previous phase. Fixed by falling

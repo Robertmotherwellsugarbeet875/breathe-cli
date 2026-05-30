@@ -296,9 +296,9 @@ def draw_bar(layout, progress, phase):
     move_to(layout.bar_row, 1)
     sys.stdout.write(ANSI_CLR_LINE)
     if phase == INHALE:
-        filled = int(progress * BAR_WIDTH)
+        filled = round(progress * BAR_WIDTH)
     else:
-        filled = int((1.0 - progress) * BAR_WIDTH)
+        filled = round((1.0 - progress) * BAR_WIDTH)
     filled = max(0, min(BAR_WIDTH, filled))
     empty = BAR_WIDTH - filled
     if layout.use_unicode:
