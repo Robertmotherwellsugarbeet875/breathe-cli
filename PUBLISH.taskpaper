@@ -1,0 +1,112 @@
+Breathe CLI — Publishing Checklist:
+
+Commit and tag:
+	- Commit all pending changes (v1.8: science, functional presets, disclaimer, MIT license) @priority(1) @done
+	- Create annotated tag: git tag -a v1.8 -m "v1.8: science section, functional presets, safety disclaimer, MIT license" @priority(1) @done
+
+Cleanup:
+	- Delete old marekkowalczyk/breathe repo on GitHub (requires delete_repo scope or Settings > Delete) @priority(1)
+
+Create GitHub repo:
+	- Create public repo: gh repo create breathe-cli --public --source=. --push @priority(1) @done
+		Pick the repo name carefully — "breathe" may be taken. "breathe-cli" is safer.
+	- Set description: gh repo edit --description "Paced resonance breathing for vagal tone training. Terminal app, single file, no dependencies." @priority(1) @done
+	- Set topics: gh repo edit --add-topic breathing,hrv,heart-rate-variability,vagal-tone,biofeedback,cli,terminal,macos,heart-failure,resonance-breathing,health @priority(1) @done
+
+GitHub release:
+	- Push tag: git push origin v1.8 @priority(1) @done
+	- Create release: gh release create v1.8 --title "v1.8 — Science & Safety" --notes "Added clinical literature review, functional preset names (balanced/calm/extended), resonance frequency measurement protocol, exhale ratio safety check, medical disclaimer, MIT license." @priority(1) @done
+
+GitHub Pages:
+	- Go to repo Settings > Pages > Source: Deploy from a branch > Branch: master, folder: / (root) > Save @priority(2) @done
+		The README renders as the landing page automatically. No extra files needed.
+
+Google Search Console:
+	- Go to https://search.google.com/search-console and add property for https://marekkowalczyk.github.io/breathe-cli/ @priority(2) @done
+	- Submit URL for indexing: enter https://marekkowalczyk.github.io/breathe-cli/ in the URL Inspection tool, then click "Request Indexing" @priority(2) @done
+	- Also submit the repo URL: https://github.com/marekkowalczyk/breathe-cli @priority(2)
+
+Homebrew tap:
+	- Create a new public repo: marekkowalczyk/homebrew-breathe @priority(3) @done
+	- Add formula Formula/breathe.rb @priority(3) @done
+	- Users install with: brew tap marekkowalczyk/breathe && brew install breathe @priority(3) @done
+
+PyPI (pip install):
+	- Create a minimal pyproject.toml (project name "breathe-cli", entry point "breathe") @priority(3) @done
+		"breathe-cli" is available; "breathe" is taken (Sphinx plugin).
+	- Build: python3.11 -m build @priority(3) @done
+	- Upload: python3.11 -m twine upload dist/* @priority(3) @done
+		Published at https://pypi.org/project/breathe-cli/1.8/
+
+Awesome lists — submit pull requests:
+	- awesome-cli-apps: https://github.com/agarrharr/awesome-cli-apps @priority(4)
+		Category: Health / Medical or Utilities. Include one-line description and link.
+	- awesome-macos-command-line: https://github.com/herrbischoff/awesome-macos-command-line @priority(4)
+	- awesome-health: https://github.com/kakoni/awesome-healthcare @priority(4)
+		Note: most awesome lists require the repo to have 30+ stars before accepting submissions. Build momentum first.
+
+Community posts:
+	- Show HN (news.ycombinator.com/submit) @priority(4) @blocked(need karma)
+		Title: "Show HN: Breathe CLI — paced resonance breathing in the terminal"
+		URL: https://github.com/marekkowalczyk/breathe-cli
+		Draft text saved in this conversation — search "Show HN" for the full post.
+		Posted but auto-flagged (new account + self-promotion triggers spam filter).
+		Emailed hn@ycombinator.com to request unflag (2026-05-30). Waiting for response.
+		Best time to repost (if needed): weekday morning US time (10–11am ET Tue–Thu).
+	- Reddit r/commandline @priority(4)
+	- Reddit r/quantifiedself @priority(4)
+	- Reddit r/HeartFailure or r/cardiology — frame as a patient sharing a tool, not promotion @priority(4)
+
+Optional — social / academic:
+	- Link the repo from your ORCID profile (Works > Add > Software) @priority(5)
+	- Consider registering a DOI via Zenodo (connects to GitHub, auto-archives releases) @priority(5)
+		This makes the software citable in academic papers.
+
+"The Market of One" article — publication plan:
+	Source: ~/repos/system/owner-inbox/2026-05-31-market-of-one-goldratt-six-questions-ai-development.md
+	~3200 words, English. Personal + analytical. Goldratt Six Questions framework, Breathe CLI case study, excavator problem, discovery gap.
+	Target audiences: domain experts who might try this, TOC practitioners, AI practitioners.
+
+	Tier 1 — own channels (publish this week):
+		- LinkedIn long-form article @priority(1)
+			Publish natively via "Write article" on profile. No adaptation needed.
+			Pair with short teaser post pulling out the excavator problem as standalone insight.
+			Second post a few days later: the "five dead-end paths" as standalone.
+		- Medium self-publish @priority(1)
+			Tags: AI, Software Development, Product Management, Healthcare, Theory of Constraints.
+			Canonical URL for HN and other links.
+			Consider also pitching Towards Data Science (Google Form) or The Startup (email pitch) with finished draft.
+		- Substack @priority(2)
+			Cross-post or publish natively. Owns the distribution channel. Builds email list.
+			This article reads like the start of a series.
+
+	Tier 2 — community submissions:
+		- Hacker News @priority(2) @blocked(account flagging — awaiting hn@ycombinator.com response from 2026-05-30)
+			Submit as link to Medium/Substack canonical URL.
+			Title: "The Market of One: When building software costs less than needing it"
+			Best time: weekday morning US Eastern (Tue–Thu 10–11am ET).
+			Note: different from the Show HN post for the tool itself. This is the article, not the repo.
+		- TOCICO newsletter / website @priority(3)
+			Six Questions applied to AI is fresh for the TOC community.
+			Email TOCICO communications team with finished piece.
+			Small audience, high signal value. Not time-sensitive.
+
+	Tier 3 — adapted versions (longer shots, run in parallel):
+		- BMJ Opinion or STAT News First Opinion @priority(3)
+			Requires heavy adaptation: extract medical narrative into standalone 900-word op-ed.
+			Drop Goldratt framework. Frame as "patient as domain expert builds own tool."
+			Pitch via email to opinion editor: two-sentence hook + full draft attached.
+		- InfoQ @priority(4)
+			Long-form analytical piece for senior practitioners.
+			Minimal adaptation — maybe add implications for software product companies.
+			Submit via InfoQ contributor form.
+		- IEEE Software "Voices" column @priority(4)
+			Cut to 2000 words, add 3-4 references.
+			Submit via IEEE manuscript system.
+
+	Sequencing:
+		1. LinkedIn + Medium this week (ready now)
+		2. HN once account issue resolved, pointing to canonical URL
+		3. Pitch TDS, BMJ/STAT in parallel (longer shots)
+		4. TOCICO whenever convenient
+		5. InfoQ/IEEE if momentum builds
