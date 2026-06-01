@@ -1,6 +1,6 @@
 # Breathe CLI
 
-Single-file Python 3 CLI app (`breathe.py`) that paces resonance breathing for HFrEF vagal training. macOS only, stdlib only, no dependencies.
+Single-file Python 3 CLI app (`breathe.py`) that paces resonance breathing for HFrEF vagal training. macOS and Windows 11 supported, stdlib only, no dependencies.
 
 ## Spec
 
@@ -10,9 +10,9 @@ Single-file Python 3 CLI app (`breathe.py`) that paces resonance breathing for H
 
 - **One file**: `breathe.py`, under 500 lines (hard cap 700). No modules, no packages, no config files.
 - **Stdlib only**: Python 3.7+. No pip installs. No third-party imports.
-- **macOS only**: Uses `/usr/bin/afplay` for audio. No Linux/Windows fallbacks.
+- **macOS & Windows 11**: Uses `/usr/bin/afplay` on macOS and `winsound` on Windows for audio.
 - **No curses**: Use direct ANSI escape codes. curses has Mojave edge cases with non-default terminals.
-- **No threading**: Use `select.select` with zero timeout for non-blocking key polling. No `threading.Thread`, no `curses.getch`.
+- **No threading**: Use `select.select` (on macOS) or `msvcrt` (on Windows) for non-blocking key polling. No `threading.Thread`, no `curses.getch`.
 
 ## Safety constraints (non-negotiable)
 

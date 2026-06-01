@@ -4,7 +4,7 @@ subtitle: 'Reference document for a paced-breathing terminal app'
 author: 'Marek Kowalczyk (spec by Claude, for Claude Opus 4.6)'
 date: 2026-05-30
 version: 1.8
-target_platform: 'macOS 10.14.6 (Mojave)'
+target_platform: 'macOS 10.14.6 (Mojave) & Windows 11'
 target_runtime: 'Python 3.7+ stdlib only'
 status: 'implementation complete — this document retains safety constraints and acceptance tests'
 ---

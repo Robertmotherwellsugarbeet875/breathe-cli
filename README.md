@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Homebrew](https://img.shields.io/badge/homebrew-tap-orange)](https://github.com/marekkowalczyk/homebrew-breathe)
 
-A terminal app that paces resonance breathing for vagal tone training. macOS only, single file, no dependencies.
+A terminal app that paces resonance breathing for vagal tone training. macOS and Windows 11, single file, no dependencies.
 
 ```
 $ breathe
