@@ -3,7 +3,6 @@ __pycache__/
 *.pyo
 .DS_Store
 .claude/settings.local.json
-PUBLISH.taskpaper
 dist/
 build/
 *.egg-info/
