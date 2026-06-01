@@ -104,13 +104,13 @@ This app is deliberately constrained. Several common breathing-app features are 
 
 **Immediate exit, always.** Pressing `q` or `Ctrl+C` ends the session within one frame. The terminal is always restored — cursor, colours, input mode — even if the app crashes. The `finally` block that does this is the most important code in the file.
 
-**No dependencies.** Single Python file, stdlib only. Nothing to install, nothing to break. Runs on the Python that ships with macOS.
+**No dependencies.** Single Python file, stdlib only. Nothing to install, nothing to break.
 
 **No curses.** Direct ANSI escape codes only. The curses library has edge cases with non-default terminals on macOS Mojave.
 
 ## Requirements
 
-- macOS (uses `/usr/bin/afplay` for audio cues)
+- macOS (uses `/usr/bin/afplay` for audio cues) or Windows 11 (uses `winsound`)
 - Python 3.7+
 
 ## Installation

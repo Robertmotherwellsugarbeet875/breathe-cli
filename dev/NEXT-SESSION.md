@@ -1,19 +1,13 @@
 # Next Session
 
-v1.8 shipped. Currently 700 lines (at the hard cap).
+v1.8 shipped. Windows 11 support merged (community PR). 176 GitHub stars. Currently 700 lines (at the hard cap).
 
 ## Open items
 
-- **Session progress bar — cycle count** (TODO #8) — time-based bar (#4) is done. This one tracks completed breath cycles. Requires line trimming first.
-- **Personal resonance frequency** (TODO #15) — `BREATHE_BPM` env var to auto-adjust presets. Fully designed, needs ~30–40 lines. Requires line trimming first.
-- **Breathing modes beyond vagal tone** (TODO #14) — significant architectural change; scope out before starting. Single-file constraint may be the binding limit.
+- **Publish "The Market of One" article** — draft ready at `~/repos/system/owner-inbox/2026-05-31-market-of-one-goldratt-six-questions-ai-development.md`. Publish on Medium (canonical URL) then LinkedIn. Submit to HN as separate post (not in the Show HN thread). HN adoption data validates the thesis — weave it in. Full plan in `PUBLISH.taskpaper`.
+- **Triage HN feature requests** — breath holds/4-7-8 (TODO #14), biofeedback-triggered cues, pomodoro. Decide which are in scope. #14 is already tracked but needs a design decision on safety architecture.
+- **Session progress bar — cycle count** (TODO #8), **Personal resonance frequency** (TODO #15) — both need line trimming first; file is at the 700-line cap.
 
 ## Publishing
 
-Done: repo, description, topics, tag, release, GitHub Pages, Google Search Console, social card (1200×630, uploaded to GitHub settings), Jekyll `og:image`, Homebrew tap, PyPI. HN post submitted but auto-flagged; emailed hn@ycombinator.com (2026-05-30).
-
-Remaining: awesome list submissions (need 30+ stars first), Reddit posts, ORCID link, Zenodo DOI. See `PUBLISH.taskpaper` (gitignored, local only) for the full checklist.
-
-## Medium post
-
-Draft at `dev/medium-post-draft.md` — "The Market of One" using Goldratt's six questions. Ready for review and publishing.
+Done: repo, GitHub Pages, social card, Homebrew tap, PyPI, Show HN (126 pts / 49 comments). Remaining: awesome list submissions (176 stars — threshold met), Reddit posts, ORCID link, Zenodo DOI, "Market of One" article. See `PUBLISH.taskpaper` for full checklist.

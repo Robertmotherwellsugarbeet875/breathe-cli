@@ -112,3 +112,19 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 - Don't delete untracked assets until the user confirms they're fully done with them — "clean up" should mean "remove what's confirmed unnecessary," not "remove all untracked files"
 - When the same text (description, title) appears in multiple places, consider whether each instance serves a different audience before making them identical
 - Treat context as perishable: commit work frequently, update NEXT-SESSION.md and TODO.md as decisions are made (not just at session close), and write important state to files immediately rather than holding it in conversation
+
+## 2026-06-01 — HN post-launch: badge, safety docs, adoption tracking
+
+**What went well:**
+- `urltomd` worked where `WebFetch` hit a 429 — good fallback for HN scraping
+- Caught README/CLAUDE.md inconsistency from the merged Windows PR (Requirements section still said "macOS only") — doc hygiene check pays off at close time
+- HN discussion data was captured in `PUBLISH.taskpaper` right where it belongs — near the Show HN item, not scattered across files
+- Dizziness guidance was already in `--safety` screen; README just needed to match — read before writing avoided duplicate work
+
+**What didn't go well:**
+- Initially put the adoption note in `NEXT-SESSION.md` in the system repo instead of `PUBLISH.taskpaper` — had to revert. Should have asked "where does this belong?" before writing
+- Tried `WebFetch` on HN first (429), then user had to suggest `urltomd` — should have tried local tools first
+
+**What we'll do differently:**
+- When the user has custom CLI tools (like `urltomd`), try those before built-in web fetch tools for sites that rate-limit
+- When adding a note about a project artifact, check for a `.taskpaper` or tracking file first — those are the canonical home, not session notes
