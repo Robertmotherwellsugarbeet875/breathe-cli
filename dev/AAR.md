@@ -128,3 +128,16 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 **What we'll do differently:**
 - When the user has custom CLI tools (like `urltomd`), try those before built-in web fetch tools for sites that rate-limit
 - When adding a note about a project artifact, check for a `.taskpaper` or tracking file first — those are the canonical home, not session notes
+
+## 2026-06-01 — Repo hygiene: separate writing from app
+
+**What went well:**
+- Clean separation of concerns — writing files moved to dedicated repo without losing git history of the content
+- Caught missing files in CLAUDE.md file layout (README.md, .gitignore) during close checklist
+- Quick decision-making on borderline files (pyproject.toml, _config.yml, google verification) — documented rather than deleted
+
+**What didn't go well:**
+- Nothing significant — this was a straightforward housekeeping session
+
+**What we'll do differently:**
+- When creating new non-code files in a project repo, ask upfront whether they belong here or in a separate repo

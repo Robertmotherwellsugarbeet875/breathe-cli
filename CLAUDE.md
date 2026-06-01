@@ -53,9 +53,11 @@ python3 -m unittest test_breathe -v
 ```
 breathe.py            # the app (single file, under 700 lines)
 test_breathe.py       # automated tests (stdlib unittest)
+README.md             # project readme
 social-card.png       # GitHub/Open Graph social preview (1200×630)
 LICENSE               # MIT license
 CLAUDE.md             # this file
+.gitignore            # git ignore rules
 pyproject.toml        # PyPI packaging metadata
 _config.yml           # GitHub Pages / Jekyll config
 google42e5de7281e23ce0.html  # Google Search Console verification
