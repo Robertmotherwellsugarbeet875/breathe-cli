@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Breathe CLI — paced breathing for HFrEF vagal training. macOS only."""
+"""Breathe CLI — paced breathing for HFrEF vagal training."""
 
 import argparse
 import os
-import select
 import signal
 import shutil
 import subprocess
 import sys
-import termios
 import time
-import tty
 from dataclasses import dataclass
+
+if os.name != 'nt':
+    import select
+    import termios
+    import tty
+
 
 # ── Constants ────────────────────────────────────────────────────────
 
@@ -31,6 +34,11 @@ SOUND_INHALE = '/System/Library/Sounds/Tink.aiff'
 SOUND_EXHALE = '/System/Library/Sounds/Pop.aiff'
 AFPLAY       = '/usr/bin/afplay'
 AFPLAY_VOL   = '0.3'
+
+# Windows Audio
+WIN_SOUND_INHALE = os.path.join(os.environ.get('SystemRoot', 'C:\\Windows'), 'Media', 'ding.wav')
+WIN_SOUND_EXHALE = os.path.join(os.environ.get('SystemRoot', 'C:\\Windows'), 'Media', 'notify.wav')
+
 
 LOG_FILE   = os.path.expanduser('~/.breathe_log.csv')
 LOG_HEADER = 'date,time,preset,ratio,duration_target_s,duration_actual_s,breaths,completion_pct,status'
@@ -154,18 +162,51 @@ def compute_layout():
         use_unicode=supports_unicode(),
     )
 
+def setup_windows_console():
+    if os.name == 'nt':
+        try:
+            import ctypes
+            from ctypes import wintypes
+            kernel32 = ctypes.windll.kernel32
+            hOut = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+            if hOut and hOut != -1:
+                mode = wintypes.DWORD()
+                if kernel32.GetConsoleMode(hOut, ctypes.byref(mode)):
+                    # 0x0004: ENABLE_VIRTUAL_TERMINAL_PROCESSING
+                    kernel32.SetConsoleMode(hOut, mode.value | 0x0004)
+        except Exception:
+            try:
+                os.system('')
+            except Exception:
+                pass
+
 def check_audio(quiet):
-    """Init audio subsystem. Returns 'afplay' or 'bell'."""
-    if (os.path.isfile(AFPLAY) and os.access(AFPLAY, os.X_OK)
-            and os.path.isfile(SOUND_INHALE)
-            and os.path.isfile(SOUND_EXHALE)):
-        return 'afplay'
+    """Init audio subsystem. Returns 'winsound', 'afplay', or 'bell'."""
+    if os.name == 'nt':
+        try:
+            import winsound
+            if os.path.isfile(WIN_SOUND_INHALE) and os.path.isfile(WIN_SOUND_EXHALE):
+                return 'winsound'
+        except ImportError:
+            pass
+    else:
+        if (os.path.isfile(AFPLAY) and os.access(AFPLAY, os.X_OK)
+                and os.path.isfile(SOUND_INHALE)
+                and os.path.isfile(SOUND_EXHALE)):
+            return 'afplay'
     if not quiet:
         sys.stderr.write('audio unavailable: falling back to terminal bell\n')
     return 'bell'
 
 def play_sound(phase, audio_mode):
-    if audio_mode == 'afplay':
+    if audio_mode == 'winsound':
+        try:
+            import winsound
+            path = WIN_SOUND_INHALE if phase == INHALE else WIN_SOUND_EXHALE
+            winsound.PlaySound(path, winsound.SND_FILENAME | winsound.SND_ASYNC)
+        except Exception:
+            pass
+    elif audio_mode == 'afplay':
         path = SOUND_INHALE if phase == INHALE else SOUND_EXHALE
         try:
             subprocess.Popen(
@@ -182,6 +223,8 @@ def play_sound(phase, audio_mode):
 def setup_raw_tty():
     if not sys.stdin.isatty():
         return None
+    if os.name == 'nt':
+        return None
     try:
         old = termios.tcgetattr(sys.stdin)
         tty.setcbreak(sys.stdin.fileno())
@@ -190,6 +233,8 @@ def setup_raw_tty():
         return None
 
 def restore_tty(old_settings):
+    if os.name == 'nt':
+        return
     if old_settings is not None:
         try:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
@@ -199,13 +244,32 @@ def restore_tty(old_settings):
 def poll_key():
     if not sys.stdin.isatty():
         return None
-    try:
-        r, _, _ = select.select([sys.stdin], [], [], 0)
-        if r:
-            return sys.stdin.read(1)
-    except (OSError, ValueError):
-        pass
-    return None
+    if os.name == 'nt':
+        import msvcrt
+        try:
+            if msvcrt.kbhit():
+                ch = msvcrt.getch()
+                if ch == b'\x03':  # Ctrl+C
+                    _abort[0] = True
+                    return 'q'
+                if ch in (b'\x00', b'\xe0'):
+                    msvcrt.getch()  # read secondary byte
+                    return None
+                try:
+                    return ch.decode('utf-8', errors='ignore')
+                except Exception:
+                    return None
+        except Exception:
+            pass
+        return None
+    else:
+        try:
+            r, _, _ = select.select([sys.stdin], [], [], 0)
+            if r:
+                return sys.stdin.read(1)
+        except (OSError, ValueError):
+            pass
+        return None
 
 def move_to(row, col):
     sys.stdout.write('\033[{};{}H'.format(row, col))
@@ -351,6 +415,7 @@ def run_session(config, result):
         result.breaths = int(result.elapsed // cycle_s)
         return
 
+    setup_windows_console()
     audio_mode = check_audio(config.quiet) if config.sound_enabled else 'none'
     layout = compute_layout()
     if layout.minimal and not config.quiet:
@@ -613,6 +678,18 @@ def main():
     if sys.version_info < (3, 7):
         sys.stderr.write('Error: breathe requires Python 3.7+\n')
         sys.exit(1)
+
+    if hasattr(sys.stdout, 'reconfigure'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+    if hasattr(sys.stderr, 'reconfigure'):
+        try:
+            sys.stderr.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
 
     parser = build_parser()
     args = parser.parse_args()
