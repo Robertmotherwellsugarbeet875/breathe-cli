@@ -56,6 +56,9 @@ test_breathe.py       # automated tests (stdlib unittest)
 social-card.png       # GitHub/Open Graph social preview (1200×630)
 LICENSE               # MIT license
 CLAUDE.md             # this file
+pyproject.toml        # PyPI packaging metadata
+_config.yml           # GitHub Pages / Jekyll config
+google42e5de7281e23ce0.html  # Google Search Console verification
 dev/
   breathe-cli-spec.md # safety constraints and acceptance tests
   TODO.md             # bugs and enhancements tracker
