@@ -232,7 +232,11 @@ TUI behaviour (rendering, animation, terminal restoration) is covered by 25 manu
 
 Run `breathe --safety` for the full safety screen. The short version:
 
-**Stop immediately** if you experience lightheadedness, palpitations, or tingling in your hands or face.
+**Stop immediately** if you experience:
+
+- **Lightheadedness or dizziness** — this usually means you are breathing too deeply, not too fast. Reduce the depth of each breath while keeping the same rhythm. The pacer sets the *timing*; you control the *volume*. If it persists, stop the session.
+- **Palpitations** — stop, note the time, mention it at your next cardiology visit.
+- **Tingling in hands or face** — a hyperventilation signal. Stop and return to normal breathing.
 
 This app deliberately does not support breath retention, rapid breathing, or any pattern not grounded in the slow-breathing clinical literature. These constraints are enforced in the code and cannot be overridden. See [The science in brief](#the-science-in-brief) and [Design choices](#design-choices) for the clinical rationale.
 

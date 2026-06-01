@@ -46,13 +46,16 @@ Awesome lists — submit pull requests:
 		Note: most awesome lists require the repo to have 30+ stars before accepting submissions. Build momentum first.
 
 Community posts:
-	- Show HN (news.ycombinator.com/submit) @priority(4) @blocked(need karma)
-		Title: "Show HN: Breathe CLI — paced resonance breathing in the terminal"
+	- Show HN (news.ycombinator.com/submit) @priority(4) @done(2026-05-31)
+		Title: "Show HN: Breathe CLI — paced resonance breathing in the macOS terminal"
 		URL: https://github.com/marekkowalczyk/breathe-cli
-		Draft text saved in this conversation — search "Show HN" for the full post.
-		Posted but auto-flagged (new account + self-promotion triggers spam filter).
-		Emailed hn@ycombinator.com to request unflag (2026-05-30). Waiting for response.
-		Best time to repost (if needed): weekday morning US time (10–11am ET Tue–Thu).
+		Thread: https://news.ycombinator.com/item?id=48340315
+		Results (as of 2026-06-01): 126 points, 49 comments, 176 GitHub stars, 1 merged community PR (Windows support).
+		Organic use cases beyond HFrEF: smoking cessation, SVT, IBS, Qi Gong, general stress.
+		Key themes: "zero friction" philosophy, "terminal ritual not wellness app", no-dependency approach praised.
+		Feature requests: breath holds/4-7-8, pomodoro, biofeedback-triggered cues.
+		One dizziness report (user breathing too deeply) — addressed in README safety section.
+		"Market of One" framing resonated — validates the article thesis.
 	- Reddit r/commandline @priority(4)
 	- Reddit r/quantifiedself @priority(4)
 	- Reddit r/HeartFailure or r/cardiology — frame as a patient sharing a tool, not promotion @priority(4)
@@ -81,7 +84,7 @@ Optional — social / academic:
 			This article reads like the start of a series.
 
 	Tier 2 — community submissions:
-		- Hacker News @priority(2) @blocked(account flagging — awaiting hn@ycombinator.com response from 2026-05-30)
+		- Hacker News @priority(2)
 			Submit as link to Medium/Substack canonical URL.
 			Title: "The Market of One: When building software costs less than needing it"
 			Best time: weekday morning US Eastern (Tue–Thu 10–11am ET).
