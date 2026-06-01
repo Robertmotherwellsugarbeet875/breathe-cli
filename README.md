@@ -4,6 +4,7 @@
 [![Python 3.7+](https://img.shields.io/pypi/pyversions/breathe-cli)](https://pypi.org/project/breathe-cli/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Homebrew](https://img.shields.io/badge/homebrew-tap-orange)](https://github.com/marekkowalczyk/homebrew-breathe)
+[![Hacker News](https://img.shields.io/badge/HN-discussion-orange)](https://news.ycombinator.com/item?id=48340315)
 
 A terminal app that paces resonance breathing for vagal tone training. macOS and Windows 11, single file, no dependencies.
 
