@@ -141,3 +141,17 @@ Continuous improvement log. Each session ends with a brief review: what went wel
 
 **What we'll do differently:**
 - When creating new non-code files in a project repo, ask upfront whether they belong here or in a separate repo
+
+## 2026-06-02 — v1.9 release (Windows 11 support)
+
+**What went well:**
+- Clean release workflow: version bump, GitHub release, PyPI publish, and HN update all done in one session
+- Caught the pyproject.toml version drift and stale OS classifier — shipped both fixes before publishing
+- NEXT-SESSION.md and docs were already mostly current from prior sessions, minimal cleanup needed
+
+**What didn't go well:**
+- `twine upload` can't run non-interactively (needs API token prompt) — had to hand off to the user mid-flow
+- Didn't catch the pyproject.toml version mismatch proactively — user had to ask
+
+**What we'll do differently:**
+- On future releases, check all version strings (breathe.py, pyproject.toml, any other metadata) as part of the release flow, not as an afterthought
