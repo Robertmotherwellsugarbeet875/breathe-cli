@@ -18,7 +18,7 @@ if os.name != 'nt':
 
 # ── Constants ────────────────────────────────────────────────────────
 
-VERSION = '1.8'
+VERSION = '1.9'
 
 PRESETS = {
     'balanced': {'duration_min': 10, 'inhale_s': 5, 'exhale_s': 5},
